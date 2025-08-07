@@ -1,0 +1,69 @@
+{
+    "name": "Balendip - Трекер баланса жизни",
+    "short_name": "Balendip",
+    "description": "Приложение для отслеживания баланса жизни и случайных событий",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0ea5e9",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "ru",
+    "categories": [
+        "lifestyle",
+        "productivity",
+        "health"
+    ],
+    "icons": [
+        {
+            "src": "/next.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/next.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/next.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/next.svg",
+            "sizes": "96x96",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Добавить событие",
+            "short_name": "Добавить",
+            "description": "Быстро добавить новое событие",
+            "url": "/?action=add-event",
+            "icons": [
+                {
+                    "src": "/next.svg",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Аналитика",
+            "short_name": "Аналитика",
+            "description": "Посмотреть аналитику",
+            "url": "/analytics",
+            "icons": [
+                {
+                    "src": "/next.svg",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ]
+}

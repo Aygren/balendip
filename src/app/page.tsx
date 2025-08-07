@@ -1,103 +1,228 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import React, { useState, Suspense, lazy, useEffect } from 'react'
+import Layout from '@/components/layout/Layout'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import FabButton from '@/components/ui/FabButton'
+import Toast from '@/components/ui/Toast'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { Plus, TrendingUp, Calendar, Settings, Loader2 } from 'lucide-react'
+import { LifeSphere, Event } from '@/types'
+import { useSpheres } from '@/hooks/useSpheresQuery'
+import { useCreateEvent } from '@/hooks/useEventsQuery'
+import { checkAndInitializeSpheres } from '@/utils/initSpheres'
+
+// Lazy loading для тяжелых компонентов
+const WheelChart = lazy(() => import('@/components/charts/WheelChart'))
+const SphereEditor = lazy(() => import('@/components/charts/SphereEditor'))
+const AddEventForm = lazy(() => import('@/components/forms/AddEventForm'))
+
+// Loading компонент для Suspense
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center p-8">
+    <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+  </div>
+)
+
+export default function HomePage() {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [showWheel, setShowWheel] = useState(true)
+  const [showEditor, setShowEditor] = useState(false)
+  const [showAddEventForm, setShowAddEventForm] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error' | 'info'
+    isVisible: boolean
+  }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  })
+
+  // Используем React Query для получения сфер жизни
+  const { data: spheres = [], isLoading: spheresLoading, error: spheresError } = useSpheres()
+
+  // Хук для создания событий
+  const createEventMutation = useCreateEvent()
+
+  // Инициализация начальных сфер жизни при загрузке
+  useEffect(() => {
+    if (user) {
+      checkAndInitializeSpheres()
+    }
+  }, [user])
+
+  const mockUser = {
+    name: user?.user_metadata?.name || 'Пользователь',
+    avatar: user?.user_metadata?.avatar_url
+  }
+
+  const averageScore = spheres.length > 0
+    ? Math.round(spheres.reduce((sum, sphere) => sum + sphere.score, 0) / spheres.length)
+    : 0
+
+  const handleSphereClick = (sphere: LifeSphere) => {
+    console.log('Clicked sphere:', sphere.name)
+    // Здесь можно добавить логику для редактирования сферы
+  }
+
+  const handleAddEvent = () => {
+    setShowAddEventForm(true)
+  }
+
+  const handleSubmitEvent = async (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      await createEventMutation.mutateAsync(eventData)
+
+      // Закрываем форму
+      setShowAddEventForm(false)
+
+      // Показываем уведомление об успехе
+      setToast({
+        message: 'Событие успешно добавлено!',
+        type: 'success',
+        isVisible: true,
+      })
+    } catch (error) {
+      console.error('Error adding event:', error)
+
+      // Показываем ошибку пользователю
+      setToast({
+        message: 'Ошибка при добавлении события',
+        type: 'error',
+        isVisible: true,
+      })
+    }
+  }
+
+  const handleNavigateToEvents = () => {
+    router.push('/events')
+  }
+
+  const handleNavigateToAnalytics = () => {
+    router.push('/analytics')
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <Layout title="Главная" user={mockUser}>
+      <div className="p-4 space-y-6">
+        {/* Приветствие */}
+        <Card>
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-secondary-900 mb-2">
+              Добро пожаловать, {mockUser.name}! 👋
+            </h2>
+            <p className="text-secondary-600">
+              Ваш текущий баланс жизни
+            </p>
+          </div>
+        </Card>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        {/* Колесо жизни с быстрыми действиями */}
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-secondary-900">
+              Колесо жизни
+            </h3>
+            <div className="flex space-x-2">
+              <Button
+                variant={showWheel ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setShowWheel(true)}
+              >
+                Просмотр
+              </Button>
+              <Button
+                variant={showEditor ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setShowEditor(true)}
+              >
+                Редактировать
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex gap-6">
+            {/* Колесо жизни */}
+            <div className="flex-1">
+              {spheresLoading ? (
+                <LoadingSpinner />
+              ) : spheresError ? (
+                <div className="text-center text-red-500 p-4">
+                  Ошибка загрузки сфер жизни
+                </div>
+              ) : (
+                <Suspense fallback={<LoadingSpinner />}>
+                  {showWheel && (
+                    <WheelChart
+                      spheres={spheres}
+                      onSphereClick={handleSphereClick}
+                      className="w-full h-64"
+                    />
+                  )}
+                  {showEditor && (
+                    <SphereEditor
+                      spheres={spheres}
+                      onSpheresChange={() => { }} // TODO: Добавить обновление через React Query
+                      className="w-full"
+                    />
+                  )}
+                </Suspense>
+              )}
+            </div>
+
+            {/* Быстрые действия справа */}
+            <div className="flex flex-col space-y-3 min-w-[120px]">
+              <Button
+                variant="secondary"
+                onClick={handleNavigateToEvents}
+                className="flex items-center justify-center space-x-2 h-12"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>События</span>
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleNavigateToAnalytics}
+                className="flex items-center justify-center space-x-2 h-12"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Аналитика</span>
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* FAB кнопка для добавления события */}
+        <FabButton
+          icon={Plus}
+          onClick={handleAddEvent}
+          className="fixed bottom-6 right-6"
+        />
+
+        {/* Модальное окно для добавления события с lazy loading */}
+        {showAddEventForm && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AddEventForm
+              onSubmit={handleSubmitEvent}
+              onClose={() => setShowAddEventForm(false)}
+              isSubmitting={createEventMutation.isPending}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+          </Suspense>
+        )}
+
+        {/* Toast уведомления */}
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
+        />
+      </div>
+    </Layout>
+  )
 }
