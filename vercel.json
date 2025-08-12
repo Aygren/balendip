@@ -1,46 +1,60 @@
 {
-    "version": 2,
-    "builds": [
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/manifest.json",
+      "destination": "/manifest.json"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
         {
-            "src": "package.json",
-            "use": "@vercel/next"
+          "key": "cache-control",
+          "value": "s-maxage=0"
         }
-    ],
-    "routes": [
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
         {
-            "src": "/sw.js",
-            "headers": {
-                "cache-control": "s-maxage=0"
-            }
+          "key": "cache-control",
+          "value": "s-maxage=0"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         },
         {
-            "src": "/manifest.json",
-            "headers": {
-                "cache-control": "s-maxage=0"
-            }
-        }
-    ],
-    "headers": [
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
         {
-            "source": "/(.*)",
-            "headers": [
-                {
-                    "key": "X-Content-Type-Options",
-                    "value": "nosniff"
-                },
-                {
-                    "key": "X-Frame-Options",
-                    "value": "DENY"
-                },
-                {
-                    "key": "X-XSS-Protection",
-                    "value": "1; mode=block"
-                }
-            ]
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
         }
-    ],
-    "env": {
-        "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key"
+      ]
     }
+  ],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key"
+  }
 }
