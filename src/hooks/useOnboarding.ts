@@ -1,230 +1,215 @@
-import { useState, useEffect } from 'react'
-import { LifeSphere } from '@/types'
-import { supabase } from '@/lib/supabase'
+import { useState, useCallback } from 'react'
+import { useSpheres } from './useSpheres'
+import { useInitializeSpheres } from './useSpheres'
 
-interface OnboardingData {
+// ===== ХУК ДЛЯ ОНБОРДИНГА =====
+
+export interface OnboardingStep {
+  id: string
+  title: string
+  description: string
   isCompleted: boolean
-  spheres: LifeSphere[]
-  completedAt?: string
+  isRequired: boolean
 }
 
-const ONBOARDING_STORAGE_KEY = 'balendip-onboarding'
+export interface OnboardingState {
+  currentStep: number
+  steps: OnboardingStep[]
+  isCompleted: boolean
+  progress: number
+}
+
+const DEFAULT_ONBOARDING_STEPS: OnboardingStep[] = [
+  {
+    id: 'welcome',
+    title: 'Добро пожаловать в Balendip!',
+    description: 'Давайте настроим ваше приложение для отслеживания жизненных сфер',
+    isCompleted: false,
+    isRequired: true,
+  },
+  {
+    id: 'spheres-setup',
+    title: 'Настройка жизненных сфер',
+    description: 'Создайте основные сферы жизни, которые важны для вас',
+    isCompleted: false,
+    isRequired: true,
+  },
+  {
+    id: 'first-event',
+    title: 'Первое событие',
+    description: 'Создайте свое первое событие для отслеживания',
+    isCompleted: false,
+    isRequired: false,
+  },
+  {
+    id: 'preferences',
+    title: 'Настройки',
+    description: 'Настройте свои предпочтения и уведомления',
+    isCompleted: false,
+    isRequired: false,
+  },
+]
 
 export const useOnboarding = () => {
-  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  // Загрузка данных из localStorage
-  const loadFromStorage = (): OnboardingData | null => {
-    if (typeof window === 'undefined') return null
-    
-    try {
-      const stored = localStorage.getItem(ONBOARDING_STORAGE_KEY)
-      return stored ? JSON.parse(stored) : null
-    } catch (error) {
-      console.error('Error loading onboarding data from localStorage:', error)
-      return null
-    }
-  }
-
-  // Сохранение в localStorage
-  const saveToStorage = (data: OnboardingData) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(data))
-    } catch (error) {
-      console.error('Error saving onboarding data to localStorage:', error)
-    }
-  }
-
-  // Сохранение сфер в Supabase
-  const saveSpheresToSupabase = async (spheres: LifeSphere[]) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        console.warn('User not authenticated, skipping Supabase save')
-        return
-      }
-
-      // Удаляем старые сферы пользователя
-      await supabase
-        .from('life_spheres')
-        .delete()
-        .eq('user_id', user.id)
-
-      // Добавляем новые сферы
-      const spheresToInsert = spheres.map(sphere => ({
-        user_id: user.id,
-        name: sphere.name,
-        color: sphere.color,
-        icon: sphere.icon,
-        score: sphere.score,
-        is_default: sphere.is_default
-      }))
-
-      const { error } = await supabase
-        .from('life_spheres')
-        .insert(spheresToInsert)
-
-      if (error) {
-        console.error('Error saving spheres to Supabase:', error)
-        throw error
-      }
-
-      console.log('Spheres saved to Supabase successfully')
-    } catch (error) {
-      console.error('Error in saveSpheresToSupabase:', error)
-      throw error
-    }
-  }
-
-  // Загрузка сфер из Supabase
-  const loadSpheresFromSupabase = async (): Promise<LifeSphere[]> => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        console.warn('User not authenticated, cannot load spheres from Supabase')
-        return []
-      }
-
-      const { data, error } = await supabase
-        .from('life_spheres')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
-
-      if (error) {
-        console.error('Error loading spheres from Supabase:', error)
-        return []
-      }
-
-      return (data || []).map(sphere => ({
-        id: sphere.id,
-        user_id: sphere.user_id,
-        name: sphere.name,
-        color: sphere.color,
-        icon: sphere.icon,
-        score: sphere.score,
-        is_default: sphere.is_default,
-        created_at: sphere.created_at,
-        updated_at: sphere.updated_at
-      }))
-    } catch (error) {
-      console.error('Error in loadSpheresFromSupabase:', error)
-      return []
-    }
-  }
-
-  // Инициализация
-  useEffect(() => {
-    const initializeOnboarding = async () => {
-      setLoading(true)
-      
+  const [onboardingState, setOnboardingState] = useState<OnboardingState>(() => {
+    // Загружаем состояние из localStorage
+    const saved = localStorage.getItem('onboarding-state')
+    if (saved) {
       try {
-        // Сначала пробуем загрузить из localStorage
-        const storedData = loadFromStorage()
-        
-        if (storedData && storedData.isCompleted) {
-          // Если онбординг завершен, пробуем загрузить актуальные данные из Supabase
-          const supabaseSpheres = await loadSpheresFromSupabase()
-          
-          if (supabaseSpheres.length > 0) {
-            setOnboardingData({
-              ...storedData,
-              spheres: supabaseSpheres
-            })
-          } else {
-            setOnboardingData(storedData)
-          }
-        } else {
-          setOnboardingData({
-            isCompleted: false,
-            spheres: []
-          })
+        const parsed = JSON.parse(saved)
+        return {
+          ...parsed,
+          steps: DEFAULT_ONBOARDING_STEPS.map((step, index) => ({
+            ...step,
+            ...parsed.steps[index],
+          })),
         }
-      } catch (error) {
-        console.error('Error initializing onboarding:', error)
-        setOnboardingData({
-          isCompleted: false,
-          spheres: []
-        })
-      } finally {
-        setLoading(false)
+      } catch {
+        // Если ошибка парсинга, используем дефолтное состояние
       }
     }
 
-    initializeOnboarding()
+    return {
+      currentStep: 0,
+      steps: DEFAULT_ONBOARDING_STEPS,
+      isCompleted: false,
+      progress: 0,
+    }
+  })
+
+  const { spheres } = useSpheres()
+  const { mutate: initializeSpheres, isPending: isInitializingSpheres } = useInitializeSpheres()
+
+  // Сохранение состояния в localStorage
+  const saveState = useCallback((newState: OnboardingState) => {
+    localStorage.setItem('onboarding-state', JSON.stringify(newState))
+    setOnboardingState(newState)
   }, [])
 
-  // Завершение онбординга
-  const completeOnboarding = async (spheres: LifeSphere[]) => {
-    try {
-      setLoading(true)
-
-      // Сохраняем в Supabase
-      await saveSpheresToSupabase(spheres)
-
-      // Сохраняем в localStorage
-      const data: OnboardingData = {
-        isCompleted: true,
-        spheres,
-        completedAt: new Date().toISOString()
+  // Переход к следующему шагу
+  const goToNextStep = useCallback(() => {
+    if (onboardingState.currentStep < onboardingState.steps.length - 1) {
+      const newState = {
+        ...onboardingState,
+        currentStep: onboardingState.currentStep + 1,
       }
-
-      saveToStorage(data)
-      setOnboardingData(data)
-
-      console.log('Onboarding completed successfully')
-    } catch (error) {
-      console.error('Error completing onboarding:', error)
-      throw error
-    } finally {
-      setLoading(false)
+      saveState(newState)
     }
-  }
+  }, [onboardingState, saveState])
+
+  // Переход к предыдущему шагу
+  const goToPreviousStep = useCallback(() => {
+    if (onboardingState.currentStep > 0) {
+      const newState = {
+        ...onboardingState,
+        currentStep: onboardingState.currentStep - 1,
+      }
+      saveState(newState)
+    }
+  }, [onboardingState, saveState])
+
+  // Переход к конкретному шагу
+  const goToStep = useCallback((stepIndex: number) => {
+    if (stepIndex >= 0 && stepIndex < onboardingState.steps.length) {
+      const newState = {
+        ...onboardingState,
+        currentStep: stepIndex,
+      }
+      saveState(newState)
+    }
+  }, [onboardingState, saveState])
+
+  // Отметка шага как завершенного
+  const completeStep = useCallback((stepId: string) => {
+    const newSteps = onboardingState.steps.map(step =>
+      step.id === stepId ? { ...step, isCompleted: true } : step
+    )
+
+    const completedSteps = newSteps.filter(step => step.isCompleted).length
+    const progress = Math.round((completedSteps / newSteps.length) * 100)
+    const isCompleted = progress === 100
+
+    const newState = {
+      ...onboardingState,
+      steps: newSteps,
+      progress,
+      isCompleted,
+    }
+
+    saveState(newState)
+  }, [onboardingState, saveState])
 
   // Сброс онбординга
-  const resetOnboarding = () => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      localStorage.removeItem(ONBOARDING_STORAGE_KEY)
-      setOnboardingData({
-        isCompleted: false,
-        spheres: []
-      })
-    } catch (error) {
-      console.error('Error resetting onboarding:', error)
+  const resetOnboarding = useCallback(() => {
+    const newState = {
+      currentStep: 0,
+      steps: DEFAULT_ONBOARDING_STEPS,
+      isCompleted: false,
+      progress: 0,
     }
-  }
+    saveState(newState)
+  }, [saveState])
 
-  // Обновление сфер
-  const updateSpheres = async (spheres: LifeSphere[]) => {
-    try {
-      await saveSpheresToSupabase(spheres)
-      
-      if (onboardingData) {
-        const updatedData = {
-          ...onboardingData,
-          spheres
-        }
-        saveToStorage(updatedData)
-        setOnboardingData(updatedData)
-      }
-    } catch (error) {
-      console.error('Error updating spheres:', error)
-      throw error
+  // Автоматическое завершение шага настройки сфер
+  const completeSpheresSetup = useCallback(() => {
+    if (spheres && spheres.length > 0) {
+      completeStep('spheres-setup')
     }
-  }
+  }, [spheres, completeStep])
+
+  // Инициализация сфер жизни
+  const handleInitializeSpheres = useCallback(() => {
+    initializeSpheres(undefined, {
+      onSuccess: () => {
+        completeStep('spheres-setup')
+        goToNextStep()
+      },
+    })
+  }, [initializeSpheres, completeStep, goToNextStep])
+
+  // Получение текущего шага
+  const currentStep = onboardingState.steps[onboardingState.currentStep]
+
+  // Проверка, можно ли перейти к следующему шагу
+  const canGoToNext = currentStep?.isCompleted || !currentStep?.isRequired
+
+  // Проверка, можно ли перейти к предыдущему шагу
+  const canGoToPrevious = onboardingState.currentStep > 0
+
+  // Получение прогресса в процентах
+  const progressPercentage = onboardingState.progress
+
+  // Проверка, завершен ли онбординг
+  const isOnboardingCompleted = onboardingState.isCompleted
 
   return {
-    onboardingData,
-    loading,
-    completeOnboarding,
+    // Состояние
+    currentStep,
+    currentStepIndex: onboardingState.currentStep,
+    steps: onboardingState.steps,
+    progress: progressPercentage,
+    isCompleted: isOnboardingCompleted,
+
+    // Действия
+    goToNextStep,
+    goToPreviousStep,
+    goToStep,
+    completeStep,
     resetOnboarding,
-    updateSpheres,
-    isCompleted: onboardingData?.isCompleted ?? false,
-    spheres: onboardingData?.spheres ?? []
+
+    // Специальные действия
+    completeSpheresSetup,
+    handleInitializeSpheres,
+
+    // Проверки
+    canGoToNext,
+    canGoToPrevious,
+
+    // Загрузка
+    isInitializingSpheres,
+
+    // Утилиты
+    totalSteps: onboardingState.steps.length,
+    completedSteps: onboardingState.steps.filter(step => step.isCompleted).length,
   }
 }

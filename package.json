@@ -1,61 +1,67 @@
 {
   "name": "balendip",
-  "version": "0.1.0",
+  "version": "2.0.0",
+  "description": "Приложение для отслеживания жизненных сфер и событий",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.7",
-    "@supabase/supabase-js": "^2.53.0",
-    "@tanstack/react-query": "^5.84.1",
-    "@tanstack/react-query-devtools": "^5.84.1",
-    "chart.js": "^4.5.0",
-    "d3": "^7.9.0",
-    "date-fns": "^4.1.0",
-    "framer-motion": "^11.15.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "@tanstack/react-query": "^5.17.0",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "d3": "^7.8.5",
     "jspdf": "^2.5.1",
-    "lucide-react": "^0.536.0",
-    "next": "^14.2.5",
-    "pdf-lib": "^1.17.1",
-    "react": "^18.3.1",
-    "react-chartjs-2": "^5.3.0",
-    "react-dom": "^18.3.1",
-    "react-virtuoso": "^4.13.0",
-    "zod": "^4.0.14"
+    "xlsx": "^0.18.5",
+    "class-validator": "^0.14.0",
+    "class-transformer": "^0.5.1"
   },
   "devDependencies": {
-    "@types/d3": "^7.4.3",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@typescript-eslint/eslint-plugin": "^8.15.0",
-    "@typescript-eslint/parser": "^8.15.0",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.5",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
-    "prettier": "^3.2.5",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+    "@types/d3": "^7.4.3",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "жизненные сферы",
+    "события",
+    "эмоции",
+    "аналитика",
+    "баланс жизни",
+    "react",
+    "next.js",
+    "typescript",
+    "supabase"
+  ],
+  "author": "Balendip Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/balendip/balendip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/balendip/balendip/issues"
+  },
+  "homepage": "https://balendip.app"
 }

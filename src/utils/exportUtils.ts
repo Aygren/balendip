@@ -1,260 +1,284 @@
-import { Event, LifeSphere } from '@/types'
+import { Event, LifeSphere, ExportOptions } from '@/types'
 
-interface ExportOptions {
-    format: 'pdf' | 'csv'
-    dateRange: { start: string; end: string }
-    events: Event[]
-    spheres: LifeSphere[]
-}
+// ===== УТИЛИТЫ ДЛЯ ЭКСПОРТА ДАННЫХ =====
 
-export const exportEvents = async (options: ExportOptions) => {
-    const { format, dateRange, events, spheres } = options
+export const exportUtils = {
+    // ===== ЭКСПОРТ В CSV =====
+    toCSV: (events: Event[], spheres: LifeSphere[], options: ExportOptions): string => {
+        const headers = [
+            'Дата',
+            'Название',
+            'Описание',
+            'Эмоция',
+            'Сферы жизни',
+            'Оценка',
+            'Время',
+            'Место',
+        ]
 
-    const filteredEvents = events.filter(event => {
-        const eventDate = new Date(event.date)
-        const startDate = new Date(dateRange.start)
-        const endDate = new Date(dateRange.end)
-        return eventDate >= startDate && eventDate <= endDate
-    })
+        const rows = events.map(event => {
+            const eventSpheres = event.spheres
+                .map(sphereId => {
+                    const sphere = spheres.find(s => s.id === sphereId)
+                    return sphere?.name || 'Неизвестно'
+                })
+                .join(', ')
 
-    if (format === 'csv') {
-        return exportToCSV(filteredEvents, spheres, dateRange)
-    } else {
-        return exportToPDF(filteredEvents, spheres, dateRange)
-    }
-}
-
-const exportToCSV = (events: Event[], spheres: LifeSphere[], dateRange: { start: string; end: string }) => {
-    const getSphereName = (sphereId: string) => {
-        const sphere = spheres.find(s => s.id === sphereId)
-        return sphere?.name || 'Неизвестно'
-    }
-
-    const getEmotionLabel = (emotion: string) => {
-        const labels = {
-            positive: 'Позитивное',
-            neutral: 'Нейтральное',
-            negative: 'Негативное'
-        }
-        return labels[emotion as keyof typeof labels] || emotion
-    }
-
-    const formatDate = (date: string) => {
-        return new Date(date).toLocaleDateString('ru-RU')
-    }
-
-    const formatTime = (time: string) => {
-        return new Date(time).toLocaleTimeString('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
-
-    // Заголовки CSV
-    const headers = [
-        'Дата',
-        'Время',
-        'Название',
-        'Описание',
-        'Эмодзи',
-        'Эмоция',
-        'Сферы жизни',
-        'Дата создания'
-    ]
-
-    // Данные для CSV
-    const csvData = events.map(event => [
-        formatDate(event.date),
-        formatTime(event.created_at),
-        event.title,
-        event.description || '',
-        event.emoji,
-        getEmotionLabel(event.emotion),
-        event.spheres.map(getSphereName).join(', '),
-        formatDate(event.created_at)
-    ])
-
-    // Создаем CSV строку
-    const csvContent = [
-        headers.join(','),
-        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n')
-
-    // Создаем и скачиваем файл
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `balendip-events-${dateRange.start}-${dateRange.end}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-}
-
-const exportToPDF = async (events: Event[], spheres: LifeSphere[], dateRange: { start: string; end: string }) => {
-    const { jsPDF } = await import('jspdf')
-    const doc = new jsPDF()
-
-    // Настройка шрифта для кириллицы
-    doc.setFont('helvetica')
-    doc.setFontSize(12)
-
-    let yPosition = 20
-    const pageHeight = 280
-    const margin = 20
-    const lineHeight = 7
-
-    // Заголовок
-    doc.setFontSize(18)
-    doc.text('Отчет событий Balendip', margin, yPosition)
-    yPosition += 15
-
-    // Период
-    doc.setFontSize(12)
-    const startDate = new Date(dateRange.start).toLocaleDateString('ru-RU')
-    const endDate = new Date(dateRange.end).toLocaleDateString('ru-RU')
-    doc.text(`Период: ${startDate} - ${endDate}`, margin, yPosition)
-    yPosition += 10
-
-    // Статистика
-    const stats = {
-        total: events.length,
-        positive: events.filter(e => e.emotion === 'positive').length,
-        neutral: events.filter(e => e.emotion === 'neutral').length,
-        negative: events.filter(e => e.emotion === 'negative').length,
-    }
-
-    doc.text(`Всего событий: ${stats.total}`, margin, yPosition)
-    yPosition += lineHeight
-    doc.text(`Позитивных: ${stats.positive}`, margin, yPosition)
-    yPosition += lineHeight
-    doc.text(`Нейтральных: ${stats.neutral}`, margin, yPosition)
-    yPosition += lineHeight
-    doc.text(`Негативных: ${stats.negative}`, margin, yPosition)
-    yPosition += 15
-
-    // Функции для форматирования
-    const getSphereName = (sphereId: string) => {
-        const sphere = spheres.find(s => s.id === sphereId)
-        return sphere?.name || 'Неизвестно'
-    }
-
-    const getEmotionLabel = (emotion: string) => {
-        const labels = {
-            positive: 'Позитивное',
-            neutral: 'Нейтральное',
-            negative: 'Негативное'
-        }
-        return labels[emotion as keyof typeof labels] || emotion
-    }
-
-    const formatDate = (date: string) => {
-        return new Date(date).toLocaleDateString('ru-RU')
-    }
-
-    const formatTime = (time: string) => {
-        return new Date(time).toLocaleTimeString('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
-
-    // Группировка событий по датам
-    const groupedEvents = groupEventsByDate(events)
-
-    // Добавляем события
-    for (const [date, dayEvents] of groupedEvents) {
-        // Проверяем, нужна ли новая страница
-        if (yPosition > pageHeight) {
-            doc.addPage()
-            yPosition = 20
-        }
-
-        // Дата
-        doc.setFontSize(14)
-        doc.setFont('helvetica', 'bold')
-        doc.text(formatDate(date), margin, yPosition)
-        yPosition += lineHeight
-
-        // События за день
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'normal')
-
-        for (const event of dayEvents) {
-            // Проверяем, нужна ли новая страница
-            if (yPosition > pageHeight - 30) {
-                doc.addPage()
-                yPosition = 20
-            }
-
-            // Название события
-            doc.setFont('helvetica', 'bold')
-            doc.text(`${event.emoji} ${event.title}`, margin, yPosition)
-            yPosition += lineHeight
-
-            // Описание
-            if (event.description) {
-                doc.setFont('helvetica', 'normal')
-                const description = event.description.length > 50
-                    ? event.description.substring(0, 50) + '...'
-                    : event.description
-                doc.text(description, margin + 10, yPosition)
-                yPosition += lineHeight
-            }
-
-            // Метаданные
-            doc.setFont('helvetica', 'italic')
-            const metadata = [
-                `Время: ${formatTime(event.created_at)}`,
-                `Эмоция: ${getEmotionLabel(event.emotion)}`,
-                `Сферы: ${event.spheres.map(getSphereName).join(', ')}`
+            return [
+                formatDate(event.date),
+                event.title,
+                event.description || '',
+                getEmotionLabel(event.emotion),
+                eventSpheres,
+                event.score?.toString() || '',
+                event.time || '',
+                event.location || '',
             ]
+        })
 
-            for (const meta of metadata) {
-                doc.text(meta, margin + 10, yPosition)
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(cell => `"${cell}"`).join(','))
+            .join('\n')
+
+        return csvContent
+    },
+
+    // ===== ЭКСПОРТ В JSON =====
+    toJSON: (events: Event[], spheres: LifeSphere[], options: ExportOptions): string => {
+        const exportData = {
+            metadata: {
+                exportedAt: new Date().toISOString(),
+                totalEvents: events.length,
+                totalSpheres: spheres.length,
+                options,
+            },
+            spheres,
+            events,
+        }
+
+        return JSON.stringify(exportData, null, 2)
+    },
+
+    // ===== ЭКСПОРТ В PDF =====
+    toPDF: async (events: Event[], spheres: LifeSphere[], options: ExportOptions): Promise<Blob> => {
+        // Динамический импорт jsPDF для уменьшения размера бандла
+        const { jsPDF } = await import('jspdf')
+
+        const doc = new jsPDF()
+        const pageWidth = doc.internal.pageSize.width
+        const margin = 20
+        const contentWidth = pageWidth - (margin * 2)
+
+        let yPosition = margin
+        const lineHeight = 7
+        const sectionSpacing = 15
+
+        // Заголовок
+        doc.setFontSize(20)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Отчет Balendip', pageWidth / 2, yPosition, { align: 'center' })
+        yPosition += lineHeight + sectionSpacing
+
+        // Метаданные
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Дата экспорта: ${formatDate(new Date().toISOString())}`, margin, yPosition)
+        yPosition += lineHeight
+        doc.text(`Всего событий: ${events.length}`, margin, yPosition)
+        yPosition += lineHeight
+        doc.text(`Всего сфер: ${spheres.length}`, margin, yPosition)
+        yPosition += lineHeight + sectionSpacing
+
+        // Сферы жизни
+        if (spheres.length > 0) {
+            doc.setFontSize(14)
+            doc.setFont('helvetica', 'bold')
+            doc.text('Сферы жизни:', margin, yPosition)
+            yPosition += lineHeight + 5
+
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'normal')
+
+            spheres.forEach(sphere => {
+                if (yPosition > doc.internal.pageSize.height - margin) {
+                    doc.addPage()
+                    yPosition = margin
+                }
+
+                doc.text(`${sphere.icon} ${sphere.name} (Оценка: ${sphere.score}/10)`, margin, yPosition)
                 yPosition += lineHeight
+            })
+
+            yPosition += sectionSpacing
+        }
+
+        // События
+        if (events.length > 0) {
+            doc.setFontSize(14)
+            doc.setFont('helvetica', 'bold')
+            doc.text('События:', margin, yPosition)
+            yPosition += lineHeight + 5
+
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'normal')
+
+            events.forEach((event, index) => {
+                if (yPosition > doc.internal.pageSize.height - margin - 30) {
+                    doc.addPage()
+                    yPosition = margin
+                }
+
+                // Заголовок события
+                doc.setFont('helvetica', 'bold')
+                doc.text(`${index + 1}. ${event.title}`, margin, yPosition)
+                yPosition += lineHeight
+
+                // Детали события
+                doc.setFont('helvetica', 'normal')
+                doc.text(`Дата: ${formatDate(event.date)}`, margin, yPosition)
+                yPosition += lineHeight
+
+                if (event.description) {
+                    const description = truncateText(event.description, contentWidth - 20)
+                    doc.text(`Описание: ${description}`, margin, yPosition)
+                    yPosition += lineHeight
+                }
+
+                doc.text(`Эмоция: ${getEmotionLabel(event.emotion)}`, margin, yPosition)
+                yPosition += lineHeight
+
+                const eventSpheres = event.spheres
+                    .map(sphereId => {
+                        const sphere = spheres.find(s => s.id === sphereId)
+                        return sphere?.name || 'Неизвестно'
+                    })
+                    .join(', ')
+
+                doc.text(`Сферы: ${eventSpheres}`, margin, yPosition)
+                yPosition += lineHeight
+
+                if (event.score) {
+                    doc.text(`Оценка: ${event.score}/10`, margin, yPosition)
+                    yPosition += lineHeight
+                }
+
+                yPosition += 5
+            })
+        }
+
+        return doc.output('blob')
+    },
+
+    // ===== ЭКСПОРТ В EXCEL =====
+    toExcel: async (events: Event[], spheres: LifeSphere[], options: ExportOptions): Promise<Blob> => {
+        // Динамический импорт xlsx для уменьшения размера бандла
+        const XLSX = await import('xlsx')
+
+        // Создаем рабочую книгу
+        const workbook = XLSX.utils.book()
+
+        // Лист со сферами жизни
+        const spheresData = spheres.map(sphere => ({
+            'Название': sphere.name,
+            'Иконка': sphere.icon,
+            'Цвет': sphere.color,
+            'Оценка': sphere.score,
+            'По умолчанию': sphere.is_default ? 'Да' : 'Нет',
+            'Дата создания': formatDate(sphere.created_at),
+        }))
+
+        const spheresSheet = XLSX.utils.json_to_sheet(spheresData)
+        XLSX.utils.book_append_sheet(workbook, spheresSheet, 'Сферы жизни')
+
+        // Лист с событиями
+        const eventsData = events.map(event => {
+            const eventSpheres = event.spheres
+                .map(sphereId => {
+                    const sphere = spheres.find(s => s.id === sphereId)
+                    return sphere?.name || 'Неизвестно'
+                })
+                .join(', ')
+
+            return {
+                'Дата': formatDate(event.date),
+                'Название': event.title,
+                'Описание': event.description || '',
+                'Эмоция': getEmotionLabel(event.emotion),
+                'Сферы жизни': eventSpheres,
+                'Оценка': event.score || '',
+                'Время': event.time || '',
+                'Место': event.location || '',
+                'Дата создания': formatDate(event.created_at),
             }
+        })
 
-            yPosition += 5
-        }
+        const eventsSheet = XLSX.utils.json_to_sheet(eventsData)
+        XLSX.utils.book_append_sheet(workbook, eventsSheet, 'События')
 
-        yPosition += 5
+        // Лист со статистикой
+        const statsData = [
+            { 'Метрика': 'Всего событий', 'Значение': events.length },
+            { 'Метрика': 'Всего сфер', 'Значение': spheres.length },
+            { 'Метрика': 'Средняя оценка событий', 'Значение': events.length > 0 ? Math.round(events.reduce((sum, e) => sum + (e.score || 0), 0) / events.length) : 0 },
+            { 'Метрика': 'Средняя оценка сфер', 'Значение': spheres.length > 0 ? Math.round(spheres.reduce((sum, s) => sum + s.score, 0) / spheres.length) : 0 },
+            { 'Метрика': 'Активные сферы (>5)', 'Значение': spheres.filter(s => s.score > 5).length },
+            { 'Метрика': 'Дата экспорта', 'Значение': formatDate(new Date().toISOString()) },
+        ]
+
+        const statsSheet = XLSX.utils.json_to_sheet(statsData)
+        XLSX.utils.book_append_sheet(workbook, statsSheet, 'Статистика')
+
+        // Настройка ширины столбцов
+        const sheets = [spheresSheet, eventsSheet, statsSheet]
+        sheets.forEach(sheet => {
+            const columnWidths = Object.keys(sheet).map(key => {
+                const maxLength = Math.max(
+                    key.length,
+                    ...Object.values(sheet).map(cell => String(cell).length)
+                )
+                return { wch: Math.min(Math.max(maxLength + 2, 10), 50) }
+            })
+            sheet['!cols'] = columnWidths
+        })
+
+        // Экспорт в blob
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+        return new Blob([excelBuffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        })
+    },
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+
+function formatDate(dateString: string): string {
+    try {
+        const date = new Date(dateString)
+        return date.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        })
+    } catch {
+        return dateString
+    }
+}
+
+function getEmotionLabel(emotion: string): string {
+    const emotionLabels: Record<string, string> = {
+        positive: 'Позитивная',
+        neutral: 'Нейтральная',
+        negative: 'Негативная',
     }
 
-    // Сохраняем PDF
-    doc.save(`balendip-events-${dateRange.start}-${dateRange.end}.pdf`)
+    return emotionLabels[emotion] || emotion
 }
 
-// Вспомогательные функции
-const groupEventsByDate = (events: Event[]) => {
-    const groups: Record<string, Event[]> = {}
+function truncateText(text: string, maxWidth: number): string {
+    if (text.length <= maxWidth / 3) return text
 
-    events.forEach(event => {
-        const date = event.date
-        if (!groups[date]) {
-            groups[date] = []
-        }
-        groups[date].push(event)
-    })
-
-    return Object.entries(groups)
-        .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+    return text.substring(0, Math.floor(maxWidth / 3)) + '...'
 }
 
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    })
-}
-
-const getEmotionLabel = (emotion: string) => {
-    const labels = {
-        positive: 'Позитивное',
-        neutral: 'Нейтральное',
-        negative: 'Негативное'
-    }
-    return labels[emotion as keyof typeof labels] || emotion
-}
+// ===== ЭКСПОРТ ПО УМОЛЧАНИЮ =====
+export default exportUtils

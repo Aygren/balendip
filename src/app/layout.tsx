@@ -1,17 +1,16 @@
-import type { Metadata, Viewport } from 'next'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { PWAProvider } from '@/components/providers/PWAProvider'
 import { QueryProvider } from '@/components/providers/QueryProvider'
+import { PWAProvider } from '@/components/providers/PWAProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Balendip - Трекер баланса жизни',
-  description: 'Приложение для отслеживания баланса жизни и случайных событий',
-  manifest: '/manifest.json',
-  keywords: ['жизнь', 'баланс', 'трекер', 'события', 'аналитика', 'продуктивность'],
+  title: 'Balendip - Отслеживание жизненных сфер',
+  description: 'Приложение для отслеживания и анализа жизненных сфер, событий и эмоций',
+  keywords: 'жизненные сферы, события, эмоции, аналитика, баланс жизни',
   authors: [{ name: 'Balendip Team' }],
   creator: 'Balendip',
   publisher: 'Balendip',
@@ -20,17 +19,18 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  metadataBase: new URL('https://balendip.app'),
   openGraph: {
-    title: 'Balendip - Трекер баланса жизни',
-    description: 'Приложение для отслеживания баланса жизни и случайных событий',
-    url: 'https://balendip.vercel.app',
+    title: 'Balendip - Отслеживание жизненных сфер',
+    description: 'Приложение для отслеживания и анализа жизненных сфер, событий и эмоций',
+    url: 'https://balendip.app',
     siteName: 'Balendip',
     images: [
       {
-        url: '/next.svg',
-        width: 1200,
-        height: 630,
-        alt: 'Balendip - Трекер баланса жизни',
+        url: '/icon-192.png',
+        width: 192,
+        height: 192,
+        alt: 'Balendip Logo',
       },
     ],
     locale: 'ru_RU',
@@ -38,9 +38,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Balendip - Трекер баланса жизни',
-    description: 'Приложение для отслеживания баланса жизни и случайных событий',
-    images: ['/next.svg'],
+    title: 'Balendip - Отслеживание жизненных сфер',
+    description: 'Приложение для отслеживания и анализа жизненных сфер, событий и эмоций',
+    images: ['/icon-192.png'],
   },
   robots: {
     index: true,
@@ -53,14 +53,12 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-}
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#0ea5e9',
+  verification: {
+    google: 'your-google-verification-code',
+  },
+  alternates: {
+    canonical: 'https://balendip.app',
+  },
 }
 
 export default function RootLayout({
@@ -70,6 +68,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#10B981" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Balendip" />
+        <meta name="msapplication-TileColor" content="#10B981" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icon-192.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="mask-icon" href="/icon-192.png" color="#10B981" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+      </head>
       <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>

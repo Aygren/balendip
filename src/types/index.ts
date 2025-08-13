@@ -1,28 +1,36 @@
 // Основные типы для приложения Balendip
 
-export interface User {
+// ===== БАЗОВЫЕ ТИПЫ =====
+export interface BaseEntity {
     id: string
-    email: string
-    name?: string
-    avatar_url?: string
     created_at: string
     updated_at: string
 }
 
-export interface LifeSphere {
-    id: string
+export interface BaseComponentProps {
+    className?: string
+    children?: React.ReactNode
+}
+
+// ===== ПОЛЬЗОВАТЕЛИ =====
+export interface User extends BaseEntity {
+    email: string
+    name?: string
+    avatar_url?: string
+}
+
+// ===== СФЕРЫ ЖИЗНИ =====
+export interface LifeSphere extends BaseEntity {
     user_id: string
     name: string
     color: string
     icon: string
     score: number // 1-10
     is_default: boolean
-    created_at: string
-    updated_at: string
 }
 
-export interface Event {
-    id: string
+// ===== СОБЫТИЯ =====
+export interface Event extends BaseEntity {
     user_id: string
     title: string
     description?: string
@@ -30,32 +38,19 @@ export interface Event {
     emotion: 'positive' | 'neutral' | 'negative'
     spheres: string[] // IDs связанных сфер
     date: string
-    created_at: string
-    updated_at: string
+    time?: string
 }
 
 export interface EventWithSpheres extends Event {
     spheres_data: LifeSphere[]
 }
 
+// ===== АНАЛИТИКА =====
 export interface BalanceData {
     spheres: LifeSphere[]
     total_score: number
     average_score: number
     last_updated: string
-}
-
-export interface OnboardingStep {
-    id: number
-    title: string
-    description: string
-    is_completed: boolean
-}
-
-export interface AnalyticsData {
-    events: EventWithSpheres[]
-    balance_history: BalanceData[]
-    correlations: CorrelationData[]
 }
 
 export interface CorrelationData {
@@ -66,18 +61,13 @@ export interface CorrelationData {
     correlation_score: number
 }
 
-export interface ChartData {
-    labels: string[]
-    datasets: {
-        label: string
-        data: number[]
-        backgroundColor: string[]
-        borderColor: string[]
-        borderWidth: number
-    }[]
+export interface AnalyticsData {
+    events: EventWithSpheres[]
+    balance_history: BalanceData[]
+    correlations: CorrelationData[]
 }
 
-// Типы для форм
+// ===== ФОРМЫ =====
 export interface AddEventForm {
     title: string
     description?: string
@@ -85,6 +75,7 @@ export interface AddEventForm {
     emotion: 'positive' | 'neutral' | 'negative'
     spheres: string[]
     date: string
+    time?: string
 }
 
 export interface OnboardingForm {
@@ -92,7 +83,7 @@ export interface OnboardingForm {
     user_name?: string
 }
 
-// Типы для API ответов
+// ===== API =====
 export interface ApiResponse<T> {
     data: T
     error?: string
@@ -107,7 +98,7 @@ export interface PaginatedResponse<T> {
     total_pages: number
 }
 
-// Типы для фильтров
+// ===== ФИЛЬТРЫ =====
 export interface EventFilters {
     date_from?: string
     date_to?: string
@@ -116,7 +107,7 @@ export interface EventFilters {
     search?: string
 }
 
-// Типы для настроек
+// ===== НАСТРОЙКИ =====
 export interface UserSettings {
     notifications_enabled: boolean
     weekly_reports: boolean
@@ -124,7 +115,7 @@ export interface UserSettings {
     language: 'ru' | 'en'
 }
 
-// Типы для экспорта
+// ===== ЭКСПОРТ =====
 export interface ExportData {
     user: User
     spheres: LifeSphere[]
@@ -133,20 +124,7 @@ export interface ExportData {
     export_date: string
 }
 
-// Типы для анимаций
-export interface AnimationProps {
-    initial?: any
-    animate?: any
-    exit?: any
-    transition?: any
-}
-
-// Типы для компонентов
-export interface BaseComponentProps {
-    className?: string
-    children?: React.ReactNode
-}
-
+// ===== UI КОМПОНЕНТЫ =====
 export interface ButtonProps extends BaseComponentProps {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
     size?: 'sm' | 'md' | 'lg'
@@ -163,16 +141,71 @@ export interface ModalProps extends BaseComponentProps {
     size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
-// Типы для хуков
+export interface InputProps extends BaseComponentProps {
+    label?: string
+    error?: string
+    helperText?: string
+    leftIcon?: React.ComponentType<{ size?: number }>
+    rightIcon?: React.ComponentType<{ size?: number }>
+    onLeftIconClick?: () => void
+    onRightIconClick?: () => void
+}
+
+// ===== ХУКИ =====
 export interface UseQueryOptions {
     enabled?: boolean
     refetchOnWindowFocus?: boolean
     staleTime?: number
-    cacheTime?: number
+    gcTime?: number
 }
 
 export interface UseMutationOptions {
     onSuccess?: (data: any) => void
     onError?: (error: any) => void
     onSettled?: () => void
-} 
+}
+
+// ===== ОНБОРДИНГ =====
+export interface OnboardingStep {
+    id: number
+    title: string
+    description: string
+    is_completed: boolean
+}
+
+// ===== АНИМАЦИИ =====
+export interface AnimationProps {
+    initial?: any
+    animate?: any
+    exit?: any
+    transition?: any
+}
+
+// ===== КОНСТАНТЫ =====
+export const EMOTION_OPTIONS = [
+    { value: 'positive', label: 'Позитивное', emoji: '😊', color: '#10B981' },
+    { value: 'neutral', label: 'Нейтральное', emoji: '😐', color: '#6B7280' },
+    { value: 'negative', label: 'Негативное', emoji: '😔', color: '#EF4444' },
+] as const
+
+export const DEFAULT_SPHERES = [
+    { name: 'Здоровье', color: '#10B981', icon: '🏥', score: 5 },
+    { name: 'Карьера', color: '#3B82F6', icon: '💼', score: 5 },
+    { name: 'Отношения', color: '#F59E0B', icon: '❤️', score: 5 },
+    { name: 'Финансы', color: '#8B5CF6', icon: '💰', score: 5 },
+    { name: 'Саморазвитие', color: '#06B6D4', icon: '📚', score: 5 },
+    { name: 'Духовность', color: '#EC4899', icon: '🧘', score: 5 },
+    { name: 'Отдых', color: '#F97316', icon: '🏖️', score: 5 },
+    { name: 'Окружение', color: '#84CC16', icon: '👥', score: 5 },
+] as const
+
+export const EMOJI_OPTIONS = [
+    '😊', '😄', '😍', '🥰', '😎', '🤩', '😌', '😇',
+    '😢', '😭', '😤', '😡', '😠', '😞', '😔', '😟',
+    '😐', '😑', '😶', '🤔', '😕', '🙁', '☹️', '😣',
+    '🎉', '🎊', '🎈', '🎁', '🎯', '🏆', '💪', '🔥',
+    '💔', '💀', '👻', '🤖', '👾', '🎮', '🎲', '🎸',
+    '🏃', '🚴', '🏊', '🏋️', '🧘', '🎨', '📚', '✍️',
+    '💼', '💰', '💳', '🏠', '🚗', '✈️', '🌍', '🌙',
+    '☀️', '🌺', '🌸', '🌻', '🌹', '🍀', '🌳', '🌴'
+] as const 
