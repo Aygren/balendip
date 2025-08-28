@@ -235,7 +235,7 @@ export const useOnboarding = () => {
   // Автоматическая навигация при изменении шага
   useEffect(() => {
     if (state.currentStep !== state.progress.step) {
-      navigateToStep(state.progress.step)
+      navigateToStep(state.progress.step as OnboardingStep)
     }
   }, [state.progress.step, navigateToStep])
 
