@@ -33,7 +33,7 @@ export interface PasswordUpdate {
 export const useCurrentUser = () => {
     return useQuery({
         queryKey: ['auth', 'user'],
-        queryFn: async () => {
+        queryFn: async (): Promise<User | null> => {
             const { data: { user }, error } = await supabase.auth.getUser()
 
             if (error) {
@@ -63,6 +63,8 @@ export const useCurrentUser = () => {
         staleTime: 5 * 60 * 1000, // 5 минут
         gcTime: 10 * 60 * 1000, // 10 минут
         retry: false, // Не повторяем запросы аутентификации
+        refetchOnWindowFocus: false, // Не рефетчим при фокусе окна
+        refetchOnMount: true, // Рефетчим при монтировании
     })
 }
 
@@ -71,7 +73,7 @@ export const useLogin = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (credentials: LoginCredentials) => {
+        mutationFn: async (credentials: LoginCredentials): Promise<User> => {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: credentials.email,
                 password: credentials.password,
@@ -81,7 +83,11 @@ export const useLogin = () => {
                 throw error
             }
 
-            return data.user
+            if (!data.user) {
+                throw new Error('Не удалось получить данные пользователя')
+            }
+
+            return data.user as User
         },
         onSuccess: () => {
             // Инвалидируем кеш пользователя
@@ -102,7 +108,7 @@ export const useRegister = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (credentials: RegisterCredentials) => {
+        mutationFn: async (credentials: RegisterCredentials): Promise<User> => {
             const { data, error } = await supabase.auth.signUp({
                 email: credentials.email,
                 password: credentials.password,
@@ -117,22 +123,24 @@ export const useRegister = () => {
                 throw error
             }
 
-            // Создаем профиль пользователя
-            if (data.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert({
-                        id: data.user.id,
-                        name: credentials.name || '',
-                        email: credentials.email,
-                    })
-
-                if (profileError) {
-                    console.warn('Ошибка создания профиля:', profileError)
-                }
+            if (!data.user) {
+                throw new Error('Не удалось создать пользователя')
             }
 
-            return data.user
+            // Создаем профиль пользователя
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({
+                    id: data.user.id,
+                    name: credentials.name || '',
+                    email: credentials.email,
+                })
+
+            if (profileError) {
+                console.warn('Ошибка создания профиля:', profileError)
+            }
+
+            return data.user as User
         },
         onSuccess: () => {
             // Инвалидируем кеш пользователя
@@ -149,7 +157,7 @@ export const useLogout = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async () => {
+        mutationFn: async (): Promise<void> => {
             const { error } = await supabase.auth.signOut()
 
             if (error) {
@@ -172,7 +180,7 @@ export const useLogout = () => {
 // Сброс пароля
 export const usePasswordReset = () => {
     return useMutation({
-        mutationFn: async (request: PasswordResetRequest) => {
+        mutationFn: async (request: PasswordResetRequest): Promise<void> => {
             const { error } = await supabase.auth.resetPasswordForEmail(request.email, {
                 redirectTo: `${window.location.origin}/auth/reset-password`,
             })
@@ -192,7 +200,7 @@ export const usePasswordUpdate = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (update: PasswordUpdate) => {
+        mutationFn: async (update: PasswordUpdate): Promise<void> => {
             const { error } = await supabase.auth.updateUser({
                 password: update.password,
             })
@@ -216,10 +224,10 @@ export const useProfileUpdate = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (updates: Partial<User>) => {
-            const { data: { user } } = await supabase.auth.getUser()
+        mutationFn: async (updates: Partial<User>): Promise<User> => {
+            const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-            if (!user) {
+            if (userError || !user) {
                 throw new Error('Пользователь не авторизован')
             }
 
@@ -235,7 +243,7 @@ export const useProfileUpdate = () => {
                 throw error
             }
 
-            return { ...user, ...updates }
+            return { ...user, ...updates } as User
         },
         onSuccess: () => {
             // Инвалидируем кеш пользователя
@@ -265,12 +273,12 @@ export const useAuth = () => {
         error,
 
         // Действия
-        login: login.mutate,
-        register: register.mutate,
-        logout: logout.mutate,
-        passwordReset: passwordReset.mutate,
-        passwordUpdate: passwordUpdate.mutate,
-        profileUpdate: profileUpdate.mutate,
+        login: (credentials: LoginCredentials) => login.mutate(credentials),
+        register: (credentials: RegisterCredentials) => register.mutate(credentials),
+        logout: () => logout.mutate(),
+        passwordReset: (request: PasswordResetRequest) => passwordReset.mutate(request),
+        passwordUpdate: (update: PasswordUpdate) => passwordUpdate.mutate(update),
+        profileUpdate: (updates: Partial<User>) => profileUpdate.mutate(updates),
 
         // Состояния загрузки
         isLoggingIn: login.isPending,

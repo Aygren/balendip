@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { QueryProvider } from '@/components/providers/QueryProvider'
+import QueryProvider from '@/components/providers/QueryProvider'
 import { PWAProvider } from '@/components/providers/PWAProvider'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -68,21 +68,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#10B981" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Balendip" />
-        <meta name="msapplication-TileColor" content="#10B981" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icon-192.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="mask-icon" href="/icon-192.png" color="#10B981" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-      </head>
       <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>

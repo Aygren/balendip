@@ -29,13 +29,13 @@ const Header: React.FC<HeaderProps> = ({
     onSettingsClick,
     className = '',
 }) => {
-    const { signOut } = useAuth()
+    const { logout } = useAuth()
     const router = useRouter()
     const [notificationCount, setNotificationCount] = useState(3) // Мок-данные для уведомлений
 
     const handleSignOut = async () => {
         try {
-            await signOut()
+            await logout()
             router.push('/auth/login')
         } catch (error) {
             console.error('Ошибка выхода:', error)
@@ -89,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({
                                 <div className="max-h-64 overflow-y-auto">
                                     {/* Мок-уведомления */}
                                     <Menu.Item>
-                                        {({ active }) => (
+                                        {({ active }: { active: boolean }) => (
                                             <div className={`px-4 py-3 ${active ? 'bg-secondary-50' : ''}`}>
                                                 <div className="flex items-start gap-3">
                                                     <div className="w-2 h-2 bg-primary-500 rounded-full mt-2"></div>
@@ -109,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({
                                         )}
                                     </Menu.Item>
                                     <Menu.Item>
-                                        {({ active }) => (
+                                        {({ active }: { active: boolean }) => (
                                             <div className={`px-4 py-3 ${active ? 'bg-secondary-50' : ''}`}>
                                                 <div className="flex items-start gap-3">
                                                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>

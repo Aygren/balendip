@@ -221,7 +221,7 @@ export default function PDFReport({
 
       // Сохраняем PDF
       const pdfBytes = await pdfDoc.save()
-      const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' })
+      const pdfBlob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' })
       
       onGenerate(pdfBlob)
     } catch (error) {

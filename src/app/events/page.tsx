@@ -1,22 +1,28 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import Layout from '@/components/layout/Layout'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { Search, Filter, Calendar, Clock, Tag, Loader2 } from 'lucide-react'
 import { Event, LifeSphere } from '@/types'
-import { useDeleteEvent } from '@/hooks/useEventsQuery'
-import { useSpheres } from '@/hooks/useSpheresQuery'
+import { useDeleteEvent } from '@/hooks/useEvents'
+import { useSpheres } from '@/hooks/useSpheres'
 import { VirtualizedEventsList } from '@/components/events/VirtualizedEventsList'
-import { useEventsPagination } from '@/hooks/useEventsPagination'
+import { useEventsPaginated } from '@/hooks/useEvents'
+import EditEventForm from '@/components/forms/EditEventForm'
 
 export default function EventsPage() {
+    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedDate, setSelectedDate] = useState('')
     const [selectedEmotion, setSelectedEmotion] = useState('')
     const [selectedSpheres, setSelectedSpheres] = useState<string[]>([])
+    const [currentPage, setCurrentPage] = useState(1)
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+    const [showEditForm, setShowEditForm] = useState(false)
 
     // Используем React Query хуки для загрузки данных
     const { data: spheres = [], isLoading: spheresLoading, error: spheresError } = useSpheres()
@@ -25,20 +31,30 @@ export default function EventsPage() {
     // Используем пагинацию с фильтрами
     const filters = {
         search: searchQuery,
-        date: selectedDate,
-        emotion: selectedEmotion,
-        spheres: selectedSpheres,
+        date_from: selectedDate,
+        date_to: selectedDate,
+        emotion: selectedEmotion as 'positive' | 'neutral' | 'negative' | undefined,
+        spheres: selectedSpheres.length > 0 ? selectedSpheres : undefined,
     }
 
     const {
-        events,
-        hasMore,
+        data: paginatedData,
         isLoading: eventsLoading,
-        isLoadingMore,
         error: eventsError,
-        loadMore,
-        refresh,
-    } = useEventsPagination(filters)
+    } = useEventsPaginated(filters, currentPage, 20)
+
+    const events = paginatedData?.data || []
+    const hasMore = paginatedData ? currentPage < paginatedData.totalPages : false
+
+    const loadMore = () => {
+        if (hasMore) {
+            setCurrentPage(prev => prev + 1)
+        }
+    }
+
+    const refresh = () => {
+        setCurrentPage(1)
+    }
 
     const emotionOptions = [
         { value: 'positive', label: 'Позитивные', emoji: '😊', color: '#10B981' },
@@ -57,6 +73,25 @@ export default function EventsPage() {
                 ? prev.filter(id => id !== sphereId)
                 : [...prev, sphereId]
         )
+    }
+
+    const handleEditEvent = (eventId: string) => {
+        const event = events.find(e => e.id === eventId)
+        if (event) {
+            setEditingEvent(event)
+            setShowEditForm(true)
+        }
+    }
+
+    const handleUpdateEvent = async (eventId: string, eventData: Partial<Event>) => {
+        try {
+            // TODO: Добавить вызов API для обновления события
+            console.log('Updating event:', eventId, eventData)
+            // Обновляем локальное состояние
+            // refresh()
+        } catch (error) {
+            console.error('Error updating event:', error)
+        }
     }
 
     const clearFilters = () => {
@@ -85,7 +120,7 @@ export default function EventsPage() {
 
     const getEventSpheres = (event: Event) => {
         return event.spheres.map(sphereId => {
-            const sphere = spheres.find(s => s.id === sphereId)
+            const sphere = spheres.find((s: LifeSphere) => s.id === sphereId)
             return sphere
         }).filter(Boolean) as LifeSphere[]
     }
@@ -101,7 +136,7 @@ export default function EventsPage() {
                     <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => console.log('Add event')}
+                        onClick={() => router.push('/')}
                     >
                         Добавить
                     </Button>
@@ -174,7 +209,7 @@ export default function EventsPage() {
                                     Сферы жизни
                                 </label>
                                 <div className="flex flex-wrap gap-2">
-                                    {spheres.map(sphere => (
+                                    {spheres.map((sphere: LifeSphere) => (
                                         <button
                                             key={sphere.id}
                                             onClick={() => handleSphereFilterToggle(sphere.id)}
@@ -212,7 +247,7 @@ export default function EventsPage() {
                         spheres={spheres}
                         loading={eventsLoading || spheresLoading}
                         onDeleteEvent={(eventId) => deleteEventMutation.mutate(eventId)}
-                        onEditEvent={(eventId) => console.log('Edit event:', eventId)}
+                        onEditEvent={handleEditEvent}
                         onLoadMore={loadMore}
                         hasMore={hasMore}
                     />
@@ -229,19 +264,34 @@ export default function EventsPage() {
                         </div>
                         <div>
                             <div className="text-2xl font-bold text-green-600">
-                                {events.filter(e => e.emotion === 'positive').length}
+                                {events.filter((e: Event) => e.emotion === 'positive').length}
                             </div>
                             <div className="text-sm text-secondary-600">Позитивных</div>
                         </div>
                         <div>
                             <div className="text-2xl font-bold text-red-600">
-                                {events.filter(e => e.emotion === 'negative').length}
+                                {events.filter((e: Event) => e.emotion === 'negative').length}
                             </div>
                             <div className="text-sm text-secondary-600">Негативных</div>
                         </div>
                     </div>
                 </Card>
             </div>
+
+            {/* Форма редактирования события */}
+            {showEditForm && editingEvent && (
+                <EditEventForm
+                    isOpen={showEditForm}
+                    onClose={() => {
+                        setShowEditForm(false)
+                        setEditingEvent(null)
+                    }}
+                    onSubmit={handleUpdateEvent}
+                    event={editingEvent}
+                    spheres={spheres}
+                    loading={false}
+                />
+            )}
         </Layout>
     )
 } 

@@ -2,78 +2,65 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
+import Layout from '@/components/layout/Layout'
 import Card from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
+    const router = useRouter()
+    const { login } = useAuth()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
-    
-    const { signIn } = useAuth()
-    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError('')
-        setSuccess('')
 
         try {
-            const { error } = await signIn(email, password)
-            
-            if (error) {
-                // Если Supabase не настроен, показываем успех для тестирования
-                if (error.message.includes('your-project.supabase.co') || error.message.includes('your-anon-key')) {
-                    setSuccess('Вход успешен! (тестовый режим - Supabase не настроен)')
-                    setTimeout(() => {
-                        router.push('/')
-                    }, 2000)
-                } else {
-                    setError(error.message)
-                }
-            } else {
-                setSuccess('Вход успешен!')
-                setTimeout(() => {
-                    router.push('/')
-                }, 1000)
-            }
+            await login({ email, password })
+            router.push('/')
         } catch (err) {
-            setError('Ошибка при входе. Проверьте настройки Supabase.')
+            setError(err instanceof Error ? err.message : 'Ошибка при входе')
+        } finally {
+            setLoading(false)
         }
-        
-        setLoading(false)
+    }
+
+    const handleEnterPress = () => {
+        handleSubmit({ preventDefault: () => { } } as React.FormEvent)
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-secondary-50 p-4">
-            <Card className="w-full max-w-md">
-                <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-white font-bold text-2xl">B</span>
+        <Layout>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50 p-4">
+                <Card className="w-full max-w-2xl">
+                    <div className="text-center mb-10">
+                        <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-8">
+                            <span className="text-white font-bold text-4xl">B</span>
+                        </div>
+                        <h1 className="text-4xl font-bold text-secondary-900">Войти в аккаунт</h1>
+                        <p className="text-secondary-600 mt-4 text-xl">Добро пожаловать обратно</p>
                     </div>
-                    <h1 className="text-2xl font-bold text-secondary-900">Вход в аккаунт</h1>
-                    <p className="text-secondary-600 mt-2">Войдите в свой аккаунт Balendip</p>
-                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input
-                        label="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        leftIcon={Mail}
-                        placeholder="your@email.com"
-                        required
-                    />
+                    <form onSubmit={handleSubmit} className="space-y-10">
+                        <Input
+                            label="Email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            leftIcon={Mail}
+                            placeholder="your@email.com"
+                            required
+                            onEnterPress={handleEnterPress}
+                        />
 
-                    <div className="relative">
                         <Input
                             label="Пароль"
                             type={showPassword ? 'text' : 'password'}
@@ -84,52 +71,38 @@ export default function LoginPage() {
                             onRightIconClick={() => setShowPassword(!showPassword)}
                             placeholder="Введите пароль"
                             required
+                            onEnterPress={handleEnterPress}
                         />
-                    </div>
 
-                    {error && (
-                        <div className="text-error-600 text-sm bg-error-50 border border-error-200 rounded-lg p-3">
-                            {error}
-                        </div>
-                    )}
+                        {error && (
+                            <div className="text-error-600 text-lg bg-error-50 border-2 border-error-200 rounded-xl p-6">
+                                {error}
+                            </div>
+                        )}
 
-                    {success && (
-                        <div className="text-accent-600 text-sm bg-accent-50 border border-accent-200 rounded-lg p-3">
-                            {success}
-                        </div>
-                    )}
-
-                    <Button
-                        type="submit"
-                        loading={loading}
-                        className="w-full"
-                        disabled={!email || !password}
-                    >
-                        Войти
-                    </Button>
-                </form>
-
-                <div className="mt-6 text-center">
-                    <p className="text-secondary-600">
-                        Нет аккаунта?{' '}
-                        <button
-                            onClick={() => router.push('/auth/register')}
-                            className="text-primary-600 hover:text-primary-700 font-medium"
+                        <Button
+                            type="submit"
+                            loading={loading}
+                            className="w-full py-6 text-2xl font-bold"
+                            disabled={!email || !password}
                         >
-                            Зарегистрироваться
-                        </button>
-                    </p>
-                </div>
+                            Войти
+                        </Button>
+                    </form>
 
-                <div className="mt-4 text-center">
-                    <button
-                        onClick={() => router.push('/auth/forgot-password')}
-                        className="text-secondary-600 hover:text-secondary-700 text-sm"
-                    >
-                        Забыли пароль?
-                    </button>
-                </div>
-            </Card>
-        </div>
+                    <div className="mt-10 text-center">
+                        <p className="text-secondary-600 text-xl">
+                            Нет аккаунта?{' '}
+                            <button
+                                onClick={() => router.push('/auth/register')}
+                                className="text-primary-600 hover:text-primary-700 font-medium underline text-xl"
+                            >
+                                Зарегистрироваться
+                            </button>
+                        </p>
+                    </div>
+                </Card>
+            </div>
+        </Layout>
     )
 } 

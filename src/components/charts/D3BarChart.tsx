@@ -94,14 +94,14 @@ export const D3BarChart: React.FC<D3BarChartProps> = ({
       .attr('y', d => yScale(d.value))
       .attr('width', xScale.bandwidth())
       .attr('height', d => height - margin.bottom - yScale(d.value))
-      .attr('fill', d => colorScale(d.label))
+      .attr('fill', d => colorScale(d.label) as string)
       .attr('rx', 4)
-      .on('mouseover', function(event, d) {
+      .on('mouseover', function (event, d) {
         d3.select(this)
           .attr('opacity', 0.8)
           .attr('stroke', '#1F2937')
           .attr('stroke-width', 2)
-        
+
         // Показываем подсказку
         const tooltip = d3.select('body').append('div')
           .attr('class', 'tooltip')
@@ -122,14 +122,14 @@ export const D3BarChart: React.FC<D3BarChartProps> = ({
         tooltip.style('left', (event.pageX + 10) + 'px')
           .style('top', (event.pageY - 10) + 'px')
       })
-      .on('mouseout', function(event, d) {
+      .on('mouseout', function (event, d) {
         d3.select(this)
           .attr('opacity', 1)
           .attr('stroke', 'none')
-        
+
         d3.selectAll('.tooltip').remove()
       })
-      .on('click', function(event, d) {
+      .on('click', function (event, d) {
         if (onBarClick) {
           onBarClick(d)
         }
@@ -155,7 +155,7 @@ export const D3BarChart: React.FC<D3BarChartProps> = ({
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale)
         .tickSize(-width + margin.left + margin.right)
-        .tickFormat('')
+        .tickFormat(() => '')
         .ticks(5)
       )
       .selectAll('line')

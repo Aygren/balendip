@@ -175,7 +175,7 @@ export const exportUtils = {
         const XLSX = await import('xlsx')
 
         // Создаем рабочую книгу
-        const workbook = XLSX.utils.book()
+        const workbook = XLSX.utils.book_new()
 
         // Лист со сферами жизни
         const spheresData = spheres.map(sphere => ({
@@ -219,9 +219,9 @@ export const exportUtils = {
         const statsData = [
             { 'Метрика': 'Всего событий', 'Значение': events.length },
             { 'Метрика': 'Всего сфер', 'Значение': spheres.length },
-            { 'Метрика': 'Средняя оценка событий', 'Значение': events.length > 0 ? Math.round(events.reduce((sum, e) => sum + (e.score || 0), 0) / events.length) : 0 },
-            { 'Метрика': 'Средняя оценка сфер', 'Значение': spheres.length > 0 ? Math.round(spheres.reduce((sum, s) => sum + s.score, 0) / spheres.length) : 0 },
-            { 'Метрика': 'Активные сферы (>5)', 'Значение': spheres.filter(s => s.score > 5).length },
+            { 'Метрика': 'Средняя оценка событий', 'Значение': events.length > 0 ? Math.round(events.reduce((sum: number, e: Event) => sum + (e.score || 0), 0) / events.length) : 0 },
+            { 'Метрика': 'Средняя оценка сфер', 'Значение': spheres.length > 0 ? Math.round(spheres.reduce((sum: number, s: LifeSphere) => sum + s.score, 0) / spheres.length) : 0 },
+            { 'Метрика': 'Активные сферы (>5)', 'Значение': spheres.filter((s: LifeSphere) => s.score > 5).length },
             { 'Метрика': 'Дата экспорта', 'Значение': formatDate(new Date().toISOString()) },
         ]
 
@@ -282,3 +282,32 @@ function truncateText(text: string, maxWidth: number): string {
 
 // ===== ЭКСПОРТ ПО УМОЛЧАНИЮ =====
 export default exportUtils
+
+// ===== ОСНОВНАЯ ФУНКЦИЯ ЭКСПОРТА =====
+export const exportEvents = async (
+    events: Event[],
+    spheres: LifeSphere[],
+    options: ExportOptions
+): Promise<Blob | string> => {
+    try {
+        switch (options.format.type) {
+            case 'csv':
+                return exportUtils.toCSV(events, spheres, options)
+
+            case 'json':
+                return exportUtils.toJSON(events, spheres, options)
+
+            case 'excel':
+                return await exportUtils.toExcel(events, spheres, options)
+
+            case 'pdf':
+                return await exportUtils.toPDF(events, spheres, options)
+
+            default:
+                throw new Error(`Неподдерживаемый формат экспорта: ${options.format.type}`)
+        }
+    } catch (error) {
+        console.error('Ошибка при экспорте событий:', error)
+        throw new Error(`Не удалось экспортировать данные: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+    }
+}

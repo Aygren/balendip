@@ -10,7 +10,7 @@ import { Edit, X, Plus } from 'lucide-react'
 
 interface SphereEditorProps {
     spheres: LifeSphere[]
-    onSpheresChange: (spheres: LifeSphere[]) => void
+    onSpheresChange: (spheres: (LifeSphere | Omit<LifeSphere, 'user_id'>)[]) => void
     className?: string
 }
 
@@ -79,15 +79,15 @@ export default function SphereEditor({
             onSpheresChange(updatedSpheres)
         } else {
             // Добавление новой сферы
-            const newSphere: LifeSphere = {
+            const newSphere: Omit<LifeSphere, 'user_id'> = {
                 id: `sphere-${Date.now()}`,
                 name: formData.name,
                 score: formData.score,
                 color: formData.color,
                 icon: formData.icon,
-                isDefault: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
+                is_default: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             }
             onSpheresChange([...spheres, newSphere])
         }
@@ -171,7 +171,7 @@ export default function SphereEditor({
                                 >
                                     <Edit size={16} />
                                 </Button>
-                                {!sphere.isDefault && (
+                                {!sphere.is_default && (
                                     <Button
                                         variant="ghost"
                                         size="sm"

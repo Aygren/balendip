@@ -6,8 +6,8 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { TrendingUp, Calendar, BarChart3, PieChart, Activity, Loader2 } from 'lucide-react'
 import { Event, LifeSphere } from '@/types'
-import { useEvents } from '@/hooks/useEventsQuery'
-import { useSpheres } from '@/hooks/useSpheresQuery'
+import { useEvents } from '@/hooks/useEvents'
+import { useSpheres } from '@/hooks/useSpheres'
 import { D3LineChart } from '@/components/charts/D3LineChart'
 import { D3PieChart } from '@/components/charts/D3PieChart'
 import { D3BarChart } from '@/components/charts/D3BarChart'
@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
       negative: 0,
     }
 
-    events.forEach(event => {
+    events.forEach((event: Event) => {
       stats[event.emotion as keyof typeof stats]++
     })
 
@@ -63,8 +63,8 @@ export default function AnalyticsPage() {
   const sphereStats = useMemo(() => {
     const stats: Record<string, number> = {}
 
-    events.forEach(event => {
-      event.spheres.forEach(sphereId => {
+    events.forEach((event: Event) => {
+      event.spheres.forEach((sphereId: string) => {
         stats[sphereId] = (stats[sphereId] || 0) + 1
       })
     })
@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
   const dailyTrends = useMemo(() => {
     const trends: Record<string, { positive: number; neutral: number; negative: number }> = {}
 
-    events.forEach(event => {
+    events.forEach((event: Event) => {
       if (!trends[event.date]) {
         trends[event.date] = { positive: 0, neutral: 0, negative: 0 }
       }
@@ -122,12 +122,12 @@ export default function AnalyticsPage() {
   }
 
   const getSphereName = (sphereId: string) => {
-    const sphere = spheres.find(s => s.id === sphereId)
+    const sphere = spheres.find((s: LifeSphere) => s.id === sphereId)
     return sphere?.name || 'Неизвестно'
   }
 
   const getSphereColor = (sphereId: string) => {
-    const sphere = spheres.find(s => s.id === sphereId)
+    const sphere = spheres.find((s: LifeSphere) => s.id === sphereId)
     return sphere?.color || '#6B7280'
   }
 
@@ -145,7 +145,7 @@ export default function AnalyticsPage() {
   const averageEmotion = useMemo(() => {
     if (totalEvents === 0) return 0
     const emotionScores = { positive: 1, neutral: 0, negative: -1 }
-    const totalScore = events.reduce((sum, event) => {
+    const totalScore = events.reduce((sum: number, event: Event) => {
       return sum + (emotionScores[event.emotion as keyof typeof emotionScores] || 0)
     }, 0)
     return Math.round((totalScore / totalEvents + 1) * 50) // 0-100 шкала

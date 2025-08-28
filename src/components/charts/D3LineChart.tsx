@@ -63,7 +63,12 @@ export const D3LineChart: React.FC<D3LineChartProps> = ({
 
     // Добавляем ось X
     const xAxis = d3.axisBottom(xScale)
-      .tickFormat(d3.timeFormat('%b %d'))
+      .tickFormat((d: Date | d3.NumberValue) => {
+        if (d instanceof Date) {
+          return d3.timeFormat('%b %d')(d)
+        }
+        return String(d)
+      })
       .ticks(5)
 
     svg.append('g')
@@ -103,12 +108,12 @@ export const D3LineChart: React.FC<D3LineChartProps> = ({
       .attr('fill', '#3B82F6')
       .attr('stroke', 'white')
       .attr('stroke-width', 2)
-      .on('mouseover', function(event, d) {
+      .on('mouseover', function (event, d) {
         d3.select(this)
           .attr('r', 6)
           .attr('fill', '#1D4ED8')
       })
-      .on('mouseout', function(event, d) {
+      .on('mouseout', function (event, d) {
         d3.select(this)
           .attr('r', 4)
           .attr('fill', '#3B82F6')
@@ -120,7 +125,7 @@ export const D3LineChart: React.FC<D3LineChartProps> = ({
       .attr('transform', `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale)
         .tickSize(-height + margin.top + margin.bottom)
-        .tickFormat('')
+        .tickFormat(() => '')
         .ticks(5)
       )
       .selectAll('line')
@@ -132,7 +137,7 @@ export const D3LineChart: React.FC<D3LineChartProps> = ({
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale)
         .tickSize(-width + margin.left + margin.right)
-        .tickFormat('')
+        .tickFormat(() => '')
         .ticks(5)
       )
       .selectAll('line')

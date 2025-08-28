@@ -39,6 +39,8 @@ export interface Event extends BaseEntity {
     spheres: string[] // IDs связанных сфер
     date: string
     time?: string
+    score?: number // Добавляем score для событий
+    location?: string // Добавляем location для событий
 }
 
 export interface EventWithSpheres extends Event {
@@ -124,16 +126,22 @@ export interface ExportData {
     export_date: string
 }
 
-// ===== UI КОМПОНЕНТЫ =====
-export interface ButtonProps extends BaseComponentProps {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
-    size?: 'sm' | 'md' | 'lg'
-    disabled?: boolean
-    loading?: boolean
-    onClick?: () => void
-    type?: 'button' | 'submit' | 'reset'
+export interface ExportFormat {
+    type: 'pdf' | 'excel' | 'csv' | 'json'
+    filename: string
 }
 
+export interface ExportOptions {
+    format: ExportFormat
+    dateRange?: {
+        from: string
+        to: string
+    }
+    includeSpheres?: boolean
+    includeAnalytics?: boolean
+}
+
+// ===== UI КОМПОНЕНТЫ =====
 export interface ModalProps extends BaseComponentProps {
     is_open: boolean
     on_close: () => void

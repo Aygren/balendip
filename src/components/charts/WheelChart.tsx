@@ -10,6 +10,7 @@ import {
     Filler,
     Tooltip,
     Legend,
+    ChartTypeRegistry,
 } from 'chart.js'
 import { Radar } from 'react-chartjs-2'
 import { LifeSphere } from '@/types'
@@ -38,7 +39,7 @@ const containerVariants = {
         scale: 1,
         transition: {
             duration: 0.5,
-            ease: "easeOut"
+            ease: "easeOut" as const
         }
     },
     exit: {
@@ -46,7 +47,7 @@ const containerVariants = {
         scale: 0.8,
         transition: {
             duration: 0.3,
-            ease: "easeIn"
+            ease: "easeIn" as const
         }
     }
 }
@@ -58,7 +59,7 @@ const scoreVariants = {
         y: 0,
         transition: {
             duration: 0.4,
-            ease: "easeOut"
+            ease: "easeOut" as const
         }
     }
 }
@@ -70,7 +71,7 @@ export default function WheelChart({
     size = 'md',
     interactive = true,
 }: WheelChartProps) {
-    const chartRef = useRef<ChartJS>(null)
+    const chartRef = useRef<ChartJS<'radar'>>(null)
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
     const [isAnimating, setIsAnimating] = useState(false)
 
@@ -81,9 +82,9 @@ export default function WheelChart({
     }
 
     const chartData = useMemo(() => {
-        const labels = spheres.map(sphere => sphere.name)
-        const data = spheres.map(sphere => sphere.score)
-        const colors = spheres.map(sphere => sphere.color)
+        const labels = spheres.map((sphere: LifeSphere) => sphere.name)
+        const data = spheres.map((sphere: LifeSphere) => sphere.score)
+        const colors = spheres.map((sphere: LifeSphere) => sphere.color)
 
         return {
             labels,
@@ -91,7 +92,7 @@ export default function WheelChart({
                 {
                     label: 'Баланс жизни',
                     data,
-                    backgroundColor: colors.map(color => `${color}20`),
+                    backgroundColor: colors.map((color: string) => `${color}20`),
                     borderColor: colors,
                     borderWidth: 2,
                     pointBackgroundColor: colors,
@@ -124,7 +125,7 @@ export default function WheelChart({
                     color: '#64748b',
                     font: {
                         size: 12,
-                        weight: '500' as const,
+                        weight: 500,
                     },
                 },
                 grid: {
@@ -135,7 +136,7 @@ export default function WheelChart({
                     color: '#475569',
                     font: {
                         size: 14,
-                        weight: '600' as const,
+                        weight: 600,
                     },
                     padding: 20,
                 },
@@ -212,7 +213,7 @@ export default function WheelChart({
 
     const averageScore = useMemo(() => {
         if (spheres.length === 0) return 0
-        return Math.round(spheres.reduce((sum, sphere) => sum + sphere.score, 0) / spheres.length)
+        return Math.round(spheres.reduce((sum: number, sphere: LifeSphere) => sum + sphere.score, 0) / spheres.length)
     }, [spheres])
 
     return (
@@ -273,7 +274,7 @@ export default function WheelChart({
             {/* Индикатор сфер */}
             <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
                 <div className="flex space-x-2">
-                    {spheres.map((sphere, index) => (
+                    {spheres.map((sphere: LifeSphere, index: number) => (
                         <motion.div
                             key={sphere.id}
                             className={`w-3 h-3 rounded-full cursor-pointer ${hoveredIndex === index ? 'scale-125' : ''

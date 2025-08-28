@@ -1,24 +1,39 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Layout from '@/components/layout/Layout'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { User, Edit, Calendar, TrendingUp, Target } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import EditProfileForm from '@/components/forms/EditProfileForm'
 
 export default function ProfilePage() {
     const { user } = useAuth()
+    const [showEditProfile, setShowEditProfile] = useState(false)
 
     const mockUser = {
-        name: user?.user_metadata?.name || 'Пользователь',
+        name: user?.name || 'Пользователь',
         email: user?.email || 'user@example.com',
-        avatar: user?.user_metadata?.avatar_url,
+        avatar: user?.avatar_url,
         joinDate: '15 января 2024',
         totalEvents: 23,
         averageScore: 7.2,
         goalsCompleted: 8,
         totalGoals: 12,
+    }
+
+    const handleEditProfile = () => {
+        setShowEditProfile(true)
+    }
+
+    const handleSaveProfile = (profileData: { name: string; email: string; avatar: string }) => {
+        // TODO: Добавить вызов API для обновления профиля
+        console.log('Saving profile:', profileData)
+        // Обновляем локальное состояние
+        mockUser.name = profileData.name
+        mockUser.avatar = profileData.avatar
+        setShowEditProfile(false)
     }
 
     return (
@@ -47,7 +62,7 @@ export default function ProfilePage() {
                                 Участник с {mockUser.joinDate}
                             </p>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={handleEditProfile}>
                             <Edit size={16} />
                             Редактировать
                         </Button>
@@ -141,7 +156,7 @@ export default function ProfilePage() {
                             </div>
                             <div>
                                 <p className="font-medium text-secondary-900">Баланс</p>
-                                <p className="text-sm text-secondary-600">Все сферы > 6 баллов</p>
+                                <p className="text-sm text-secondary-600">Все сферы &gt; 6 баллов</p>
                             </div>
                         </div>
                     </div>
@@ -191,6 +206,20 @@ export default function ProfilePage() {
                     </div>
                 </Card>
             </div>
+
+            {/* Форма редактирования профиля */}
+            {showEditProfile && (
+                <EditProfileForm
+                    isOpen={showEditProfile}
+                    onClose={() => setShowEditProfile(false)}
+                    onSubmit={handleSaveProfile}
+                    initialData={{
+                        name: mockUser.name,
+                        email: mockUser.email,
+                        avatar: mockUser.avatar || '',
+                    }}
+                />
+            )}
         </Layout>
     )
 }

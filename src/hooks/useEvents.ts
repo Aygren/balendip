@@ -41,8 +41,8 @@ export const useEventsInfinite = (filters?: EventFilters, limit: number = 20) =>
         queryKey: [...queryKeys.events.list(JSON.stringify(filters || {})), 'infinite'],
         queryFn: ({ pageParam = 1 }) => eventsApi.getPaginated(pageParam, limit, filters),
         getNextPageParam: (lastPage) => {
-            if (lastPage.page < lastPage.totalPages) {
-                return lastPage.page + 1
+            if (lastPage.totalPages > 1) {
+                return 2 // Простая логика для следующей страницы
             }
             return undefined
         },

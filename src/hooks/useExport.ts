@@ -101,7 +101,7 @@ export const useExport = () => {
         data: ExportData,
         format: ExportFormat
     ): Promise<ExportResult> => {
-        switch (format) {
+        switch (format.type) {
             case 'csv':
                 return exportToCSV.mutateAsync(data)
             case 'json':
@@ -111,12 +111,12 @@ export const useExport = () => {
             case 'excel':
                 return exportToExcel.mutateAsync(data)
             default:
-                throw new Error(`Неподдерживаемый формат экспорта: ${format}`)
+                throw new Error(`Неподдерживаемый формат экспорта: ${format.type}`)
         }
     }
 
     const downloadFile = (result: ExportResult) => {
-        const url = URL.createObjectURL(result.data)
+        const url = URL.createObjectURL(result.data as Blob)
         const link = document.createElement('a')
         link.href = url
         link.download = result.filename
@@ -176,7 +176,7 @@ export const useExportDataFilter = () => {
         const start = new Date(startDate)
         const end = new Date(endDate)
 
-        return events.filter(event => {
+        return events.filter((event: Event) => {
             const eventDate = new Date(event.date)
             return eventDate >= start && eventDate <= end
         })
@@ -188,8 +188,8 @@ export const useExportDataFilter = () => {
     ): Event[] => {
         if (sphereIds.length === 0) return events
 
-        return events.filter(event =>
-            event.spheres.some(sphereId => sphereIds.includes(sphereId))
+        return events.filter((event: Event) =>
+            event.spheres.some((sphereId: string) => sphereIds.includes(sphereId))
         )
     }
 
@@ -199,7 +199,7 @@ export const useExportDataFilter = () => {
     ): Event[] => {
         if (emotions.length === 0) return events
 
-        return events.filter(event => emotions.includes(event.emotion))
+        return events.filter((event: Event) => emotions.includes(event.emotion))
     }
 
     const sortEventsForExport = (
@@ -271,7 +271,7 @@ export const useExportStats = () => {
             byDate[dateKey] = (byDate[dateKey] || 0) + 1
 
             // Общий счет
-            totalScore += event.score || 0
+            totalScore += (event.score || 0)
         })
 
         return {

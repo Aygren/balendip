@@ -11,8 +11,16 @@ export const useSpheres = () => {
         queryFn: spheresApi.getAll,
         staleTime: 10 * 60 * 1000, // 10 минут (сферы редко изменяются)
         gcTime: 30 * 60 * 1000, // 30 минут
-        retry: 3,
+        retry: (failureCount, error) => {
+            // Не повторяем для ошибок аутентификации
+            if (error?.message?.includes('auth') || error?.message?.includes('unauthorized')) {
+                return false
+            }
+            return failureCount < 3
+        },
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        refetchOnWindowFocus: false, // Не рефетчим при фокусе окна
+        refetchOnMount: true, // Рефетчим при монтировании
     })
 }
 
@@ -24,6 +32,12 @@ export const useSphere = (id: string) => {
         enabled: !!id,
         staleTime: 15 * 60 * 1000, // 15 минут
         gcTime: 60 * 60 * 1000, // 1 час
+        retry: (failureCount, error) => {
+            if (error?.message?.includes('auth') || error?.message?.includes('unauthorized')) {
+                return false
+            }
+            return failureCount < 2
+        },
     })
 }
 
@@ -109,25 +123,25 @@ export const useInitializeSpheres = () => {
 // ===== УТИЛИТЫ ДЛЯ СФЕР =====
 
 // Получение названия сферы по ID
-export const useSphereName = (sphereId: string, spheres: LifeSphere[]) => {
+export const useSphereName = (sphereId: string, spheres: LifeSphere[]): string => {
     const sphere = spheres.find(s => s.id === sphereId)
     return sphere?.name || 'Неизвестно'
 }
 
 // Получение цвета сферы по ID
-export const useSphereColor = (sphereId: string, spheres: LifeSphere[]) => {
+export const useSphereColor = (sphereId: string, spheres: LifeSphere[]): string => {
     const sphere = spheres.find(s => s.id === sphereId)
     return sphere?.color || '#6B7280'
 }
 
 // Получение иконки сферы по ID
-export const useSphereIcon = (sphereId: string, spheres: LifeSphere[]) => {
+export const useSphereIcon = (sphereId: string, spheres: LifeSphere[]): string => {
     const sphere = spheres.find(s => s.id === sphereId)
     return sphere?.icon || '❓'
 }
 
 // Фильтрация сфер по поиску
-export const useFilteredSpheres = (spheres: LifeSphere[], search: string) => {
+export const useFilteredSpheres = (spheres: LifeSphere[], search: string): LifeSphere[] => {
     if (!search.trim()) return spheres
 
     const searchLower = search.toLowerCase()
@@ -138,7 +152,10 @@ export const useFilteredSpheres = (spheres: LifeSphere[], search: string) => {
 }
 
 // Сортировка сфер по различным критериям
-export const useSortedSpheres = (spheres: LifeSphere[], sortBy: 'name' | 'score' | 'created_at' = 'name') => {
+export const useSortedSpheres = (
+    spheres: LifeSphere[], 
+    sortBy: 'name' | 'score' | 'created_at' = 'name'
+): LifeSphere[] => {
     return [...spheres].sort((a, b) => {
         switch (sortBy) {
             case 'name':

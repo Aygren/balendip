@@ -1,0 +1,10 @@
+[core]
+    pager = cat
+[init]
+    defaultBranch = main
+[push]
+    default = simple
+[color]
+    ui = auto
+[help]
+    autocorrect = 1

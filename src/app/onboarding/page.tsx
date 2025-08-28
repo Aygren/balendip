@@ -6,7 +6,7 @@ import { useOnboarding } from '@/hooks/useOnboarding'
 import { LifeSphere } from '@/types'
 
 export default function OnboardingPage() {
-  const { completeOnboarding, loading } = useOnboarding()
+  const { completeOnboarding, isInitializingSpheres } = useOnboarding()
 
   const handleOnboardingComplete = async (spheres: LifeSphere[]) => {
     try {
@@ -18,7 +18,7 @@ export default function OnboardingPage() {
     }
   }
 
-  if (loading) {
+  if (isInitializingSpheres) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

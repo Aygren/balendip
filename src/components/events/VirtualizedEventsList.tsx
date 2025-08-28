@@ -206,7 +206,7 @@ export const VirtualizedEventsList: React.FC<VirtualizedEventsListProps> = ({
       <Virtuoso
         style={{ height: '100%' }}
         data={events}
-        itemContent={(index) => itemContent(index)}
+        itemContent={(index: number) => itemContent(index)}
         endReached={handleEndReached}
         increaseViewportBy={200}
         components={{

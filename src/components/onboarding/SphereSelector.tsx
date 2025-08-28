@@ -34,7 +34,7 @@ const itemVariants = {
     scale: 1,
     transition: {
       duration: 0.3,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   },
   selected: {
@@ -42,7 +42,7 @@ const itemVariants = {
     boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
     transition: {
       duration: 0.2,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   }
 }
@@ -54,7 +54,7 @@ const checkmarkVariants = {
     opacity: 1,
     transition: {
       duration: 0.2,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   }
 }

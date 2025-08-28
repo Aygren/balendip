@@ -1,47 +1,45 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-interface QueryProviderProps {
-  children: React.ReactNode
-}
-
-// Создаем QueryClient с настройками
-const queryClient = new QueryClient({
+// Создаем QueryClient с настройками по умолчанию
+const createQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
-      // Время жизни кеша (5 минут)
-      staleTime: 5 * 60 * 1000,
-      // Время кеширования (10 минут)
-      gcTime: 10 * 60 * 1000,
-      // Количество повторных попыток при ошибке
-      retry: 3,
-      // Интервал между повторными попытками
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      // Рефетч при фокусе окна
+      staleTime: 5 * 60 * 1000, // 5 минут
+      gcTime: 10 * 60 * 1000, // 10 минут
+      retry: (failureCount, error: any) => {
+        // Не повторяем запросы для ошибок 4xx
+        if (error?.status >= 400 && error?.status < 500) {
+          return false
+        }
+        // Повторяем максимум 3 раза для других ошибок
+        return failureCount < 3
+      },
       refetchOnWindowFocus: false,
-      // Рефетч при переподключении
       refetchOnReconnect: true,
-      // Рефетч при монтировании
-      refetchOnMount: true,
     },
     mutations: {
-      // Количество повторных попыток для мутаций
       retry: 1,
-      // Интервал между повторными попытками для мутаций
-      retryDelay: 1000,
     },
   },
 })
 
-export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
+export default function QueryProvider({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => createQueryClient())
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* DevTools только в режиме разработки */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* Показываем devtools только на клиенте и только в development */}
+      {isClient && process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>

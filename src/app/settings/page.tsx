@@ -7,31 +7,36 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
 import { User, Bell, Download, Upload, Trash2, Edit, Plus, Moon, Sun } from 'lucide-react'
+import AddSphereForm from '@/components/forms/AddSphereForm'
+import EditSphereForm from '@/components/forms/EditSphereForm'
 import { useAuth } from '@/contexts/AuthContext'
 import { LifeSphere } from '@/types'
 
 export default function SettingsPage() {
-  const { user, signOut } = useAuth()
+  const { user, logout } = useAuth()
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showSpheresModal, setShowSpheresModal] = useState(false)
+  const [showAddSphereModal, setShowAddSphereModal] = useState(false)
+  const [editingSphere, setEditingSphere] = useState<LifeSphere | null>(null)
+  const [showEditSphereModal, setShowEditSphereModal] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
 
   const [profileData, setProfileData] = useState({
-    name: user?.user_metadata?.name || 'Пользователь',
+    name: user?.name || 'Пользователь',
     email: user?.email || '',
-    avatar: user?.user_metadata?.avatar_url || '',
+    avatar: user?.avatar_url || '',
   })
 
   const [spheres, setSpheres] = useState<LifeSphere[]>([
-    { id: '1', name: 'Здоровье', score: 7, color: '#10B981', icon: '🏥', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '2', name: 'Карьера', score: 8, color: '#3B82F6', icon: '💼', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '3', name: 'Отношения', score: 6, color: '#F59E0B', icon: '❤️', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '4', name: 'Финансы', score: 5, color: '#8B5CF6', icon: '💰', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '5', name: 'Саморазвитие', score: 9, color: '#06B6D4', icon: '📚', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '6', name: 'Духовность', score: 4, color: '#EC4899', icon: '🧘', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '7', name: 'Отдых', score: 6, color: '#F97316', icon: '🏖️', isDefault: true, createdAt: '', updatedAt: '' },
-    { id: '8', name: 'Окружение', score: 7, color: '#84CC16', icon: '👥', isDefault: true, createdAt: '', updatedAt: '' },
+    { id: '1', name: 'Здоровье', score: 7, color: '#10B981', icon: '🏥', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '2', name: 'Карьера', score: 8, color: '#3B82F6', icon: '💼', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '3', name: 'Отношения', score: 6, color: '#F59E0B', icon: '❤️', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '4', name: 'Финансы', score: 5, color: '#8B5CF6', icon: '💰', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '5', name: 'Саморазвитие', score: 9, color: '#06B6D4', icon: '📚', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '6', name: 'Духовность', score: 4, color: '#EC4899', icon: '🧘', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '7', name: 'Отдых', score: 6, color: '#F97316', icon: '🏖️', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
+    { id: '8', name: 'Окружение', score: 7, color: '#84CC16', icon: '👥', is_default: true, user_id: 'temp-user', created_at: '', updated_at: '' },
   ])
 
   const handleProfileSave = () => {
@@ -39,25 +44,116 @@ export default function SettingsPage() {
     setShowProfileModal(false)
   }
 
+  const handleAddSphere = () => {
+    setShowAddSphereModal(true)
+  }
+
+  const handleSaveSphere = (sphereData: Omit<LifeSphere, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    const newSphere: LifeSphere = {
+      ...sphereData,
+      id: Date.now().toString(), // Временный ID
+      user_id: 'temp-user',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    setSpheres(prev => [...prev, newSphere])
+    setShowAddSphereModal(false)
+  }
+
+  const handleEditSphere = (sphere: LifeSphere) => {
+    setEditingSphere(sphere)
+    setShowEditSphereModal(true)
+  }
+
+  const handleUpdateSphere = (sphereData: Partial<LifeSphere>) => {
+    if (editingSphere) {
+      setSpheres(prev => prev.map(sphere => 
+        sphere.id === editingSphere.id 
+          ? { ...sphere, ...sphereData, updated_at: new Date().toISOString() }
+          : sphere
+      ))
+      setShowEditSphereModal(false)
+      setEditingSphere(null)
+    }
+  }
+
+  const handleDeleteSphere = (sphereId: string) => {
+    if (confirm('Вы уверены, что хотите удалить эту сферу? Это действие нельзя отменить.')) {
+      setSpheres(prev => prev.filter(sphere => sphere.id !== sphereId))
+    }
+  }
+
   const handleExportData = () => {
-    console.log('Exporting data...')
-    // Здесь будет логика экспорта данных
+    try {
+      const data = {
+        spheres,
+        profile: profileData,
+        settings: {
+          isDarkMode,
+          notifications,
+        },
+        exportDate: new Date().toISOString(),
+      }
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `balendip-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error exporting data:', error)
+      alert('Ошибка при экспорте данных')
+    }
   }
 
   const handleImportData = () => {
-    console.log('Importing data...')
-    // Здесь будет логика импорта данных
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target?.result as string)
+            
+            if (data.spheres) {
+              setSpheres(data.spheres)
+            }
+            if (data.profile) {
+              setProfileData(data.profile)
+            }
+            if (data.settings) {
+              setIsDarkMode(data.settings.isDarkMode || false)
+              setNotifications(data.settings.notifications !== false)
+            }
+            
+            alert('Данные успешно импортированы')
+          } catch (error) {
+            console.error('Error importing data:', error)
+            alert('Ошибка при импорте данных. Проверьте формат файла.')
+          }
+        }
+        reader.readAsText(file)
+      }
+    }
+    input.click()
   }
 
   const handleDeleteAccount = () => {
     if (confirm('Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить.')) {
       console.log('Deleting account...')
-      signOut()
+      logout()
     }
   }
 
   const handleSignOut = () => {
-    signOut()
+    logout()
   }
 
   const toggleDarkMode = () => {
@@ -352,14 +448,16 @@ export default function SettingsPage() {
                     variant="ghost"
                     size="sm"
                     className="p-1"
+                    onClick={() => handleEditSphere(sphere)}
                   >
                     <Edit size={14} />
                   </Button>
-                  {!sphere.isDefault && (
+                  {!sphere.is_default && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="p-1 text-error-600 hover:text-error-700"
+                      onClick={() => handleDeleteSphere(sphere.id)}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -377,7 +475,7 @@ export default function SettingsPage() {
               Закрыть
             </Button>
             <Button
-              onClick={() => setShowSpheresModal(false)}
+              onClick={handleAddSphere}
               className="flex-1"
             >
               Добавить сферу
@@ -385,6 +483,24 @@ export default function SettingsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Форма добавления сферы */}
+      <AddSphereForm
+        isOpen={showAddSphereModal}
+        onClose={() => setShowAddSphereModal(false)}
+        onSubmit={handleSaveSphere}
+      />
+
+      {/* Форма редактирования сферы */}
+      <EditSphereForm
+        isOpen={showEditSphereModal}
+        onClose={() => {
+          setShowEditSphereModal(false)
+          setEditingSphere(null)
+        }}
+        onSubmit={handleUpdateSphere}
+        sphere={editingSphere}
+      />
     </Layout>
   )
 } 

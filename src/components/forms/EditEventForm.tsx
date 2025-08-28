@@ -1,33 +1,34 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Event, LifeSphere } from '@/types'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
-import Card from '@/components/ui/Card'
-import { Calendar, Clock, Tag, Smile, X } from 'lucide-react'
+import { Calendar, Clock, Tag, X } from 'lucide-react'
 
-interface AddEventFormProps {
+interface EditEventFormProps {
     isOpen: boolean
     onClose: () => void
-    onSubmit: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => void
+    onSubmit: (eventId: string, event: Partial<Event>) => void
+    event: Event | null
     spheres: LifeSphere[]
     loading?: boolean
 }
 
-export default function AddEventForm({
+export default function EditEventForm({
     isOpen,
     onClose,
     onSubmit,
+    event,
     spheres,
     loading = false,
-}: AddEventFormProps) {
+}: EditEventFormProps) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toTimeString().slice(0, 5),
+        date: '',
+        time: '',
         emotion: 'positive',
         emoji: '😊',
         sphereIds: [] as string[],
@@ -52,6 +53,21 @@ export default function AddEventForm({
         '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑',
     ]
 
+    // Заполняем форму данными события при открытии
+    useEffect(() => {
+        if (event) {
+            setFormData({
+                title: event.title || '',
+                description: event.description || '',
+                date: event.date || '',
+                time: event.time || '',
+                emotion: event.emotion || 'positive',
+                emoji: event.emoji || '😊',
+                sphereIds: event.spheres || [],
+            })
+        }
+    }, [event])
+
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
 
@@ -74,7 +90,7 @@ export default function AddEventForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!validateForm()) return
+        if (!validateForm() || !event) return
 
         const eventData = {
             title: formData.title.trim(),
@@ -83,28 +99,16 @@ export default function AddEventForm({
             time: formData.time,
             emotion: formData.emotion,
             emoji: formData.emoji,
-            spheres: formData.sphereIds, // Переименовываем sphereIds в spheres
+            spheres: formData.sphereIds,
         }
 
-        onSubmit({
+        onSubmit(event.id, {
             ...eventData,
             emotion: eventData.emotion as 'positive' | 'neutral' | 'negative',
-            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            user_id: 'temp-user-id' // Будет заменено на реальный ID при отправке
         })
 
-        // Сброс формы
-        setFormData({
-            title: '',
-            description: '',
-            date: new Date().toISOString().split('T')[0],
-            time: new Date().toTimeString().slice(0, 5),
-            emotion: 'positive',
-            emoji: '😊',
-            sphereIds: [],
-        })
-        setErrors({})
+        onClose()
     }
 
     const handleSphereToggle = (sphereId: string) => {
@@ -120,11 +124,13 @@ export default function AddEventForm({
         setFormData(prev => ({ ...prev, emoji }))
     }
 
+    if (!event) return null
+
     return (
         <Modal
             is_open={isOpen}
             on_close={onClose}
-            title="Добавить событие"
+            title="Редактировать событие"
             size="lg"
         >
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -299,10 +305,10 @@ export default function AddEventForm({
                         className="flex-1"
                         loading={loading}
                     >
-                        Добавить событие
+                        Сохранить изменения
                     </Button>
                 </div>
             </form>
         </Modal>
     )
-} 
+}

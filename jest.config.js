@@ -34,10 +34,6 @@ const customJestConfig = {
         '^@/types/(.*)$': '<rootDir>/src/types/$1',
         '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
         '^@/contexts/(.*)$': '<rootDir>/src/contexts/$1',
-    },
-
-    // Настройки для CSS и статических файлов
-    moduleNameMapping: {
         // Игнорируем CSS модули
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         // Игнорируем изображения и другие статические файлы
@@ -71,20 +67,8 @@ const customJestConfig = {
         },
     },
 
-    // Настройки для трансформации
-    transform: {
-        '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
-    },
-
     // Настройки для расширений
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
-
-    // Настройки для глобальных переменных
-    globals: {
-        'ts-jest': {
-            useESM: true,
-        },
-    },
 
     // Настройки для таймаутов
     testTimeout: 10000,

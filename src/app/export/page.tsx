@@ -11,17 +11,18 @@ import { Loader2 } from 'lucide-react'
 export default function ExportPage() {
     const [exportLoading, setExportLoading] = useState(false)
 
-    const { events, loading: eventsLoading, error: eventsError } = useEvents()
-    const { spheres, loading: spheresLoading, error: spheresError } = useSpheres()
+    const { data: events = [], isLoading: eventsLoading, error: eventsError } = useEvents()
+    const { data: spheres = [], isLoading: spheresLoading, error: spheresError } = useSpheres()
 
     const handleExport = async (format: 'pdf' | 'csv', dateRange: { start: string; end: string }) => {
         try {
             setExportLoading(true)
-            await exportEvents({
-                format,
-                dateRange,
-                events,
-                spheres,
+            await exportEvents(events, spheres, {
+                format: { type: format, filename: `balendip-export-${new Date().toISOString().split('T')[0]}.${format}` },
+                dateRange: {
+                    from: dateRange.start,
+                    to: dateRange.end,
+                },
             })
         } catch (error) {
             console.error('Ошибка экспорта:', error)
@@ -53,7 +54,7 @@ export default function ExportPage() {
                 {(eventsError || spheresError) && (
                     <div className="text-center py-8 text-red-600">
                         <p>Ошибка загрузки данных:</p>
-                        <p className="text-sm">{eventsError || spheresError}</p>
+                        <p className="text-sm">{eventsError?.message || spheresError?.message || 'Произошла ошибка'}</p>
                     </div>
                 )}
 

@@ -72,14 +72,14 @@ export const D3PieChart: React.FC<D3PieChartProps> = ({
 
     slices.append('path')
       .attr('d', arc)
-      .attr('fill', d => colorScale(d.data.label))
+      .attr('fill', d => colorScale(d.data.label) as string)
       .attr('stroke', 'white')
       .attr('stroke-width', 2)
-      .on('mouseover', function(event, d) {
+      .on('mouseover', function (event, d) {
         d3.select(this)
           .attr('stroke-width', 3)
           .attr('stroke', '#1F2937')
-        
+
         // Показываем подсказку
         const tooltip = d3.select('body').append('div')
           .attr('class', 'tooltip')
@@ -101,14 +101,14 @@ export const D3PieChart: React.FC<D3PieChartProps> = ({
         tooltip.style('left', (event.pageX + 10) + 'px')
           .style('top', (event.pageY - 10) + 'px')
       })
-      .on('mouseout', function(event, d) {
+      .on('mouseout', function (event, d) {
         d3.select(this)
           .attr('stroke-width', 2)
           .attr('stroke', 'white')
-        
+
         d3.selectAll('.tooltip').remove()
       })
-      .on('click', function(event, d) {
+      .on('click', function (event, d) {
         if (onSliceClick) {
           onSliceClick(d.data)
         }
@@ -143,7 +143,7 @@ export const D3PieChart: React.FC<D3PieChartProps> = ({
     legendItems.append('rect')
       .attr('width', 12)
       .attr('height', 12)
-      .attr('fill', d => colorScale(d.label))
+      .attr('fill', d => colorScale(d.label) as string)
       .attr('rx', 2)
 
     legendItems.append('text')

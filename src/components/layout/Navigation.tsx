@@ -15,11 +15,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-    { href: '/', icon: Home, label: 'Главная' },
-    { href: '/analytics', icon: BarChart3, label: 'Аналитика' },
-    { href: '/events', icon: Calendar, label: 'События' },
-    { href: '/export', icon: Download, label: 'Экспорт' },
-    { href: '/settings', icon: Settings, label: 'Настройки' },
+    { href: '/', icon: Home as React.ComponentType<{ size?: number }>, label: 'Главная' },
+    { href: '/analytics', icon: BarChart3 as React.ComponentType<{ size?: number }>, label: 'Аналитика' },
+    { href: '/events', icon: Calendar as React.ComponentType<{ size?: number }>, label: 'События' },
+    { href: '/export', icon: Download as React.ComponentType<{ size?: number }>, label: 'Экспорт' },
+    { href: '/settings', icon: Settings as React.ComponentType<{ size?: number }>, label: 'Настройки' },
 ]
 
 const Navigation: React.FC<NavigationProps> = ({ className = '' }) => {

@@ -316,3 +316,51 @@ export default {
     getSphereRecommendations,
     analyzeSpheresBalance,
 }
+
+// Функция для проверки и инициализации сфер жизни
+export const checkAndInitializeSpheres = async (): Promise<void> => {
+    try {
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            console.log('Пользователь не авторизован, пропускаем инициализацию сфер')
+            return
+        }
+
+        // Проверяем, есть ли уже сферы у пользователя
+        const { data: existingSpheres, error: fetchError } = await supabase
+            .from('life_spheres')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1)
+
+        if (fetchError) {
+            console.error('Ошибка при проверке существующих сфер:', fetchError)
+            return
+        }
+
+        // Если сфер нет, создаем стандартные
+        if (!existingSpheres || existingSpheres.length === 0) {
+            console.log('Создаем стандартные сферы жизни для пользователя')
+
+            const spheresToInsert = DEFAULT_SPHERES.map(sphere => ({
+                ...sphere,
+                user_id: user.id,
+            }))
+
+            const { error: insertError } = await supabase
+                .from('life_spheres')
+                .insert(spheresToInsert)
+
+            if (insertError) {
+                console.error('Ошибка при создании стандартных сфер:', insertError)
+            } else {
+                console.log('Стандартные сферы жизни успешно созданы')
+            }
+        } else {
+            console.log('Сферы жизни уже существуют, инициализация не требуется')
+        }
+    } catch (error) {
+        console.error('Ошибка при инициализации сфер жизни:', error)
+    }
+}

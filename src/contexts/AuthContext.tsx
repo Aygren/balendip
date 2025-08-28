@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, ReactNode } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth as useAuthHook } from '@/hooks/useAuth'
 import { User } from '@/types'
 
 // ===== КОНТЕКСТ АУТЕНТИФИКАЦИИ =====
@@ -41,11 +41,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Провайдер контекста аутентификации
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const auth = useAuth()
+  const auth = useAuthHook()
 
   const contextValue: AuthContextType = {
     // Состояние
-    user: auth.user,
+    user: auth.user || null,
     isLoading: auth.isLoading,
     isAuthenticated: auth.isAuthenticated,
     error: auth.error,
@@ -54,8 +54,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login: auth.login,
     register: auth.register,
     logout: auth.logout,
-    passwordReset: auth.passwordReset,
-    passwordUpdate: auth.passwordUpdate,
+    passwordReset: (email: string) => auth.passwordReset({ email }),
+    passwordUpdate: (password: string) => auth.passwordUpdate({ password }),
     profileUpdate: auth.profileUpdate,
 
     // Состояния загрузки
@@ -83,11 +83,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 }
 
 // Хук для использования контекста аутентификации
-export const useAuthContext = (): AuthContextType => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext)
 
   if (context === undefined) {
-    throw new Error('useAuthContext должен использоваться внутри AuthProvider')
+    throw new Error('useAuth должен использоваться внутри AuthProvider')
   }
 
   return context
@@ -95,16 +95,16 @@ export const useAuthContext = (): AuthContextType => {
 
 // Утилиты для проверки аутентификации
 export const useIsAuthenticated = (): boolean => {
-  const { isAuthenticated } = useAuthContext()
+  const { isAuthenticated } = useAuth()
   return isAuthenticated
 }
 
 export const useCurrentUser = (): User | null => {
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   return user
 }
 
 export const useAuthLoading = (): boolean => {
-  const { isLoading } = useAuthContext()
+  const { isLoading } = useAuth()
   return isLoading
 } 

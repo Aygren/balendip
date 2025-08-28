@@ -14,10 +14,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   fallback 
 }) => {
-  const { user, loading } = useAuth()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">

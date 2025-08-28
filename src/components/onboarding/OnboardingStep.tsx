@@ -30,7 +30,7 @@ const stepVariants = {
     scale: 1,
     transition: {
       duration: 0.5,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   },
   exit: {
@@ -39,7 +39,7 @@ const stepVariants = {
     scale: 0.95,
     transition: {
       duration: 0.3,
-      ease: "easeIn"
+      ease: "easeIn" as const
     }
   }
 }
@@ -50,7 +50,7 @@ const progressVariants = {
     width: `${progress}%`,
     transition: {
       duration: 0.5,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   })
 }
