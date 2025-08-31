@@ -35,6 +35,7 @@ const Button: React.FC<ButtonProps> = ({
     secondary: 'bg-secondary-200 text-secondary-800 hover:bg-secondary-300 focus:ring-secondary-500/30 shadow-md hover:shadow-lg',
     outline: 'border-2 border-primary-200 bg-white text-primary-700 hover:bg-primary-50 hover:border-primary-300 focus:ring-primary-500/30 shadow-sm hover:shadow-md',
     ghost: 'text-secondary-700 hover:bg-secondary-100 focus:ring-secondary-500/30',
+    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500/30 shadow-md hover:shadow-lg',
     gradient: 'bg-gradient-to-r from-slate-400 via-slate-500 to-slate-600 text-white shadow-md hover:shadow-lg border border-slate-400/20',
     glass: 'bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-lg hover:shadow-xl',
     modern: 'bg-gradient-to-r from-slate-500 via-slate-600 to-slate-700 text-white shadow-lg hover:shadow-xl border border-slate-500/20',

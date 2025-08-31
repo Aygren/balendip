@@ -279,7 +279,7 @@ const LifeWheel = ({
 export default function HomePage() {
   const router = useRouter()
   const { user } = useAuth()
-  const { spheres, isLoading: spheresLoading } = useSpheres()
+  const { data: spheres, isLoading: spheresLoading } = useSpheres()
   const { isCompleted: isOnboardingCompleted } = useOnboarding()
   const [showEditor, setShowEditor] = useState(false)
   const [toast, setToast] = useState({ message: '', type: 'success' as const, isVisible: false })
@@ -288,16 +288,96 @@ export default function HomePage() {
   const [hasChanges, setHasChanges] = useState(false)
 
   // Используем fallback сферы если API не загрузился
-  const defaultSpheres = [
-    { id: 1, name: 'Здоровье', score: 7, color: '#10B981' },
-    { id: 2, name: 'Карьера', score: 6, color: '#3B82F6' },
-    { id: 3, name: 'Финансы', score: 5, color: '#F59E0B' },
-    { id: 4, name: 'Отношения', score: 8, color: '#EF4444' },
-    { id: 5, name: 'Саморазвитие', score: 7, color: '#8B5CF6' },
-    { id: 6, name: 'Досуг', score: 6, color: '#EC4899' },
-    { id: 7, name: 'Духовность', score: 5, color: '#06B6D4' },
-    { id: 8, name: 'Окружение', score: 7, color: '#84CC16' }
-  ] as LifeSphere[]
+  const defaultSpheres: LifeSphere[] = [
+    { 
+      id: '1', 
+      name: 'Здоровье', 
+      score: 7, 
+      color: '#10B981',
+      user_id: user?.id || '',
+      icon: '🏥',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '2', 
+      name: 'Карьера', 
+      score: 6, 
+      color: '#3B82F6',
+      user_id: user?.id || '',
+      icon: '💼',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '3', 
+      name: 'Финансы', 
+      score: 5, 
+      color: '#F59E0B',
+      user_id: user?.id || '',
+      icon: '💰',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '4', 
+      name: 'Отношения', 
+      score: 8, 
+      color: '#EF4444',
+      user_id: user?.id || '',
+      icon: '❤️',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '5', 
+      name: 'Саморазвитие', 
+      score: 7, 
+      color: '#8B5CF6',
+      user_id: user?.id || '',
+      icon: '📚',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '6', 
+      name: 'Досуг', 
+      score: 6, 
+      color: '#EC4899',
+      user_id: user?.id || '',
+      icon: '🎮',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '7', 
+      name: 'Духовность', 
+      score: 5, 
+      color: '#06B6D4',
+      user_id: user?.id || '',
+      icon: '🕊️',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { 
+      id: '8', 
+      name: 'Окружение', 
+      score: 7, 
+      color: '#84CC16',
+      user_id: user?.id || '',
+      icon: '🌍',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ]
 
   // Инициализируем локальные сферы
   React.useEffect(() => {

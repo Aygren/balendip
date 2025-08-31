@@ -8,7 +8,7 @@ import { LifeSphere } from '@/types'
 export const useSpheres = () => {
     console.log('🔍 useSpheres() - хук вызван')
 
-    const query = useQuery({
+    const query = useQuery<LifeSphere[]>({
         queryKey: queryKeys.spheres.lists(),
         queryFn: spheresApi.getAll,
         staleTime: 10 * 60 * 1000, // 10 минут (сферы редко изменяются)
@@ -25,21 +25,9 @@ export const useSpheres = () => {
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
         refetchOnWindowFocus: false, // Не рефетчим при фокусе окна
         refetchOnMount: true, // Рефетчим при монтировании
-        onSuccess: (data) => {
-            console.log('✅ useSpheres - успешная загрузка данных:', data?.length || 0)
-        },
-        onError: (error) => {
-            console.error('❌ useSpheres - ошибка загрузки:', error)
-        },
-        onSettled: (data, error) => {
-            console.log('🏁 useSpheres - запрос завершен:', {
-                hasData: !!data,
-                dataLength: data?.length || 0,
-                hasError: !!error
-            })
-        }
     })
 
+    // Логируем состояние запроса
     console.log('📊 useSpheres - состояние запроса:', {
         isLoading: query.isLoading,
         isError: query.isError,

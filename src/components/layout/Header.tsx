@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({
                                                             Новое событие добавлено
                                                         </p>
                                                         <p className="text-xs text-secondary-600 mt-1">
-                                                            Вы добавили событие "Утренняя пробежка"
+                                                            Вы добавили событие &quot;Утренняя пробежка&quot;
                                                         </p>
                                                         <p className="text-xs text-secondary-500 mt-1">
                                                             2 минуты назад
@@ -193,9 +193,8 @@ const Header: React.FC<HeaderProps> = ({
                                     {({ active }) => (
                                         <button
                                             onClick={handleProfileClick}
-                                            className={`${
-                                                active ? 'bg-secondary-50' : ''
-                                            } flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary-700 hover:text-secondary-900`}
+                                            className={`${active ? 'bg-secondary-50' : ''
+                                                } flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary-700 hover:text-secondary-900`}
                                         >
                                             <UserIcon size={16} />
                                             Профиль
@@ -206,9 +205,8 @@ const Header: React.FC<HeaderProps> = ({
                                     {({ active }) => (
                                         <button
                                             onClick={handleSettingsClick}
-                                            className={`${
-                                                active ? 'bg-secondary-50' : ''
-                                            } flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary-700 hover:text-secondary-900`}
+                                            className={`${active ? 'bg-secondary-50' : ''
+                                                } flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary-700 hover:text-secondary-900`}
                                         >
                                             <Settings size={16} />
                                             Настройки
@@ -220,9 +218,8 @@ const Header: React.FC<HeaderProps> = ({
                                     {({ active }) => (
                                         <button
                                             onClick={handleSignOut}
-                                            className={`${
-                                                active ? 'bg-secondary-50' : ''
-                                            } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:text-red-700`}
+                                            className={`${active ? 'bg-secondary-50' : ''
+                                                } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:text-red-700`}
                                         >
                                             <LogOut size={16} />
                                             Выйти

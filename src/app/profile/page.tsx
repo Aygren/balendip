@@ -174,7 +174,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-secondary-900">
-                                    Добавлено событие "Утренняя пробежка"
+                                    Добавлено событие &quot;Утренняя пробежка&quot;
                                 </p>
                                 <p className="text-xs text-secondary-600">2 минуты назад</p>
                             </div>
@@ -198,7 +198,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-secondary-900">
-                                    Достигнута цель "Читать 30 минут в день"
+                                    Достигнута цель &quot;Читать 30 минут в день&quot;
                                 </p>
                                 <p className="text-xs text-secondary-600">3 часа назад</p>
                             </div>
