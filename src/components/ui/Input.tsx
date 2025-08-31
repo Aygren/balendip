@@ -31,7 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const baseClasses = 'w-full rounded-xl border-2 bg-white px-8 py-6 text-secondary-900 placeholder-secondary-500 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/20 transition-all duration-200 focus:scale-[1.02] text-xl font-medium min-h-[80px]'
+    const baseClasses = 'w-full rounded-xl border-2 bg-white/90 backdrop-blur-sm px-8 py-6 text-secondary-900 placeholder-secondary-500 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/20 transition-all duration-300 focus:scale-[1.02] text-xl font-medium min-h-[80px] shadow-md hover:shadow-lg focus:shadow-xl'
 
     const errorClasses = error ? 'border-error-500 focus:border-error-500 focus:ring-error-500/20' : 'border-secondary-300'
 
@@ -50,6 +50,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       borderRadius: 16,
     }
 
+    // Применяем inline стили поверх defaultStyle с приоритетом
+    const finalStyle: React.CSSProperties = {
+      ...defaultStyle,
+      ...(props.style as React.CSSProperties),
+      // Принудительно применяем inline стили
+      minHeight: (props.style as React.CSSProperties)?.minHeight || defaultStyle.minHeight,
+      fontSize: (props.style as React.CSSProperties)?.fontSize || defaultStyle.fontSize,
+      paddingTop: (props.style as React.CSSProperties)?.paddingTop || defaultStyle.paddingTop,
+      paddingBottom: (props.style as React.CSSProperties)?.paddingBottom || defaultStyle.paddingBottom,
+    }
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter' && onEnterPress) {
         e.preventDefault()
@@ -64,7 +75,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-4 block text-lg font-semibold text-secondary-700">
+          <label className="mb-4 block text-lg font-bold text-secondary-800">
             {label}
           </label>
         )}
@@ -72,33 +83,33 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           {LeftIcon && (
             <div
-              className={`${leftIconClasses} ${onLeftIconClick ? 'cursor-pointer hover:text-secondary-600' : ''}`}
+              className={`${leftIconClasses} ${onLeftIconClick ? 'cursor-pointer hover:text-secondary-600 hover:scale-110 transition-all duration-200' : ''}`}
               onClick={onLeftIconClick}
             >
-              <LeftIcon size={28} />
+              <LeftIcon size={30} />
             </div>
           )}
 
           <input
             ref={ref}
             className={`${baseClasses} ${errorClasses} ${LeftIcon ? 'pl-20' : ''} ${RightIcon ? 'pr-20' : ''} ${className}`}
-            style={{ ...defaultStyle, ...(props.style as React.CSSProperties) }}
+            style={finalStyle}
             onKeyDown={handleKeyDown}
             {...props}
           />
 
           {RightIcon && (
             <div
-              className={`${rightIconClasses} ${onRightIconClick ? 'cursor-pointer hover:text-secondary-600' : ''}`}
+              className={`${rightIconClasses} ${onRightIconClick ? 'cursor-pointer hover:text-secondary-600 hover:scale-110 transition-all duration-200' : ''}`}
               onClick={onRightIconClick}
             >
-              <RightIcon size={28} />
+              <RightIcon size={30} />
             </div>
           )}
         </div>
 
         {(error || helperText) && (
-          <p className={`mt-3 text-lg ${error ? 'text-error-600' : 'text-secondary-500'}`}>
+          <p className={`mt-3 text-lg font-medium ${error ? 'text-error-600' : 'text-secondary-500'}`}>
             {error || helperText}
           </p>
         )}

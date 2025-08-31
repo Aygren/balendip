@@ -44,9 +44,9 @@ export const useCurrentUser = () => {
                 return null
             }
 
-            // Получаем дополнительную информацию о пользователе
+            // Получаем дополнительную информацию о пользователе из таблицы users
             const { data: profile } = await supabase
-                .from('profiles')
+                .from('users')
                 .select('*')
                 .eq('id', user.id)
                 .single()
@@ -127,9 +127,16 @@ export const useRegister = () => {
                 throw new Error('Не удалось создать пользователя')
             }
 
+            // Проверяем, есть ли активная сессия
+            if (!data.session) {
+                // Если сессии нет, значит требуется подтверждение email
+                // Это нормально для некоторых настроек Supabase
+                console.warn('Сессия не установлена - возможно требуется подтверждение email')
+            }
+
             // Создаем профиль пользователя
             const { error: profileError } = await supabase
-                .from('profiles')
+                .from('users')
                 .insert({
                     id: data.user.id,
                     name: credentials.name || '',
@@ -145,6 +152,9 @@ export const useRegister = () => {
         onSuccess: () => {
             // Инвалидируем кеш пользователя
             queryClient.invalidateQueries({ queryKey: ['auth', 'user'] })
+
+            // Принудительно обновляем данные пользователя
+            queryClient.refetchQueries({ queryKey: ['auth', 'user'] })
         },
         onError: (error) => {
             console.error('Ошибка регистрации:', error)

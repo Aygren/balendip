@@ -20,12 +20,12 @@ const Layout: React.FC<LayoutProps> = ({
     children,
     title,
     user,
-    showHeader = true,
+    showHeader = false, // Изменил на false по умолчанию
     showNavigation = true,
     className = '',
 }) => {
     return (
-        <div className={`min-h-screen bg-secondary-50 ${className}`}>
+        <div className={`min-h-screen ${className}`}>
             {showHeader && (
                 <Header
                     title={title}
@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({
                 />
             )}
 
-            <main className={`${showNavigation ? 'pb-20' : ''} ${showHeader ? 'pt-0' : 'pt-0'}`}>
+            <main className={`${showNavigation ? 'pb-20' : ''} ${showHeader ? 'pt-0' : 'pt-0'} min-h-screen`}>
                 {children}
             </main>
 

@@ -6,14 +6,18 @@ import { LifeSphere } from '@/types'
 
 // Получение всех сфер жизни
 export const useSpheres = () => {
-    return useQuery({
+    console.log('🔍 useSpheres() - хук вызван')
+
+    const query = useQuery({
         queryKey: queryKeys.spheres.lists(),
         queryFn: spheresApi.getAll,
         staleTime: 10 * 60 * 1000, // 10 минут (сферы редко изменяются)
         gcTime: 30 * 60 * 1000, // 30 минут
         retry: (failureCount, error) => {
+            console.log(`🔄 Попытка повторного запроса ${failureCount + 1} для сфер жизни:`, error)
             // Не повторяем для ошибок аутентификации
             if (error?.message?.includes('auth') || error?.message?.includes('unauthorized')) {
+                console.log('❌ Ошибка аутентификации, не повторяем запрос')
                 return false
             }
             return failureCount < 3
@@ -21,7 +25,30 @@ export const useSpheres = () => {
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
         refetchOnWindowFocus: false, // Не рефетчим при фокусе окна
         refetchOnMount: true, // Рефетчим при монтировании
+        onSuccess: (data) => {
+            console.log('✅ useSpheres - успешная загрузка данных:', data?.length || 0)
+        },
+        onError: (error) => {
+            console.error('❌ useSpheres - ошибка загрузки:', error)
+        },
+        onSettled: (data, error) => {
+            console.log('🏁 useSpheres - запрос завершен:', {
+                hasData: !!data,
+                dataLength: data?.length || 0,
+                hasError: !!error
+            })
+        }
     })
+
+    console.log('📊 useSpheres - состояние запроса:', {
+        isLoading: query.isLoading,
+        isError: query.isError,
+        isSuccess: query.isSuccess,
+        data: query.data?.length || 0,
+        error: query.error
+    })
+
+    return query
 }
 
 // Получение сферы по ID
@@ -153,7 +180,7 @@ export const useFilteredSpheres = (spheres: LifeSphere[], search: string): LifeS
 
 // Сортировка сфер по различным критериям
 export const useSortedSpheres = (
-    spheres: LifeSphere[], 
+    spheres: LifeSphere[],
     sortBy: 'name' | 'score' | 'created_at' = 'name'
 ): LifeSphere[] => {
     return [...spheres].sort((a, b) => {

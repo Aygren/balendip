@@ -52,13 +52,13 @@ const Header: React.FC<HeaderProps> = ({
     }
 
     return (
-        <header className={`flex items-center justify-between bg-white border-b border-secondary-200 px-4 py-3 ${className}`}>
-            <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">B</span>
+        <header className={`flex items-center justify-between bg-white/90 backdrop-blur-sm border-b border-secondary-200 px-6 py-4 shadow-sm ${className}`}>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-lg">B</span>
                     </div>
-                    <h1 className="text-lg font-semibold text-secondary-900">{title}</h1>
+                    <h1 className="text-xl font-bold text-secondary-900">{title}</h1>
                 </div>
             </div>
 

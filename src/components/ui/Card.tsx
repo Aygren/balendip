@@ -23,9 +23,9 @@ const Card: React.FC<CardProps> = ({
     const baseClasses = 'rounded-xl border transition-all duration-200'
 
     const variantClasses = {
-        default: 'bg-white border-secondary-200 shadow-soft',
-        elevated: 'bg-white border-secondary-200 shadow-medium',
-        outlined: 'bg-transparent border-secondary-300 shadow-none',
+        default: 'bg-white border-secondary-200 shadow-lg hover:shadow-xl',
+        elevated: 'bg-white border-secondary-200 shadow-xl hover:shadow-2xl',
+        outlined: 'bg-white/80 backdrop-blur-sm border-secondary-300 shadow-md hover:shadow-lg',
     }
 
     const paddingClasses = {

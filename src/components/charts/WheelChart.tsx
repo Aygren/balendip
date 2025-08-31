@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useRef, useState, useMemo } from 'react'
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -10,7 +9,6 @@ import {
     Filler,
     Tooltip,
     Legend,
-    ChartTypeRegistry,
 } from 'chart.js'
 import { Radar } from 'react-chartjs-2'
 import { LifeSphere } from '@/types'
@@ -32,38 +30,6 @@ interface WheelChartProps {
     interactive?: boolean
 }
 
-const containerVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        transition: {
-            duration: 0.5,
-            ease: "easeOut" as const
-        }
-    },
-    exit: {
-        opacity: 0,
-        scale: 0.8,
-        transition: {
-            duration: 0.3,
-            ease: "easeIn" as const
-        }
-    }
-}
-
-const scoreVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.4,
-            ease: "easeOut" as const
-        }
-    }
-}
-
 export default function WheelChart({
     spheres,
     onSphereClick,
@@ -73,12 +39,11 @@ export default function WheelChart({
 }: WheelChartProps) {
     const chartRef = useRef<ChartJS<'radar'>>(null)
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-    const [isAnimating, setIsAnimating] = useState(false)
 
     const sizeClasses = {
-        sm: 'w-64 h-64',
-        md: 'w-80 h-80',
-        lg: 'w-96 h-96',
+        sm: 'w-80 h-80 md:w-96 md:h-96',
+        md: 'w-96 h-96 md:w-[28rem] md:h-[28rem]',
+        lg: 'w-[32rem] h-[32rem] md:w-[40rem] md:h-[40rem] lg:w-[48rem] lg:h-[48rem]',
     }
 
     const chartData = useMemo(() => {
@@ -98,23 +63,20 @@ export default function WheelChart({
                     pointBackgroundColor: colors,
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    pointRadius: 12,
+                    pointHoverRadius: 16,
                     pointHoverBackgroundColor: colors,
                     pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 3,
+                    pointHoverBorderWidth: 5,
                 },
             ],
         }
     }, [spheres])
 
-    const options = {
+    const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
-        animation: {
-            duration: 1000,
-            easing: 'easeInOutQuart' as const,
-        },
+        animation: false, // Полностью отключаем анимацию
         scales: {
             r: {
                 beginAtZero: true,
@@ -124,21 +86,21 @@ export default function WheelChart({
                     stepSize: 2,
                     color: '#64748b',
                     font: {
-                        size: 12,
+                        size: 24,
                         weight: 500,
                     },
                 },
                 grid: {
                     color: '#e2e8f0',
-                    lineWidth: 1,
+                    lineWidth: 2,
                 },
                 pointLabels: {
                     color: '#475569',
                     font: {
-                        size: 14,
+                        size: 32,
                         weight: 600,
                     },
-                    padding: 20,
+                    padding: 50,
                 },
             },
         },
@@ -169,17 +131,6 @@ export default function WheelChart({
             mode: 'nearest' as const,
         },
     }
-
-    // Анимация при изменении данных
-    useEffect(() => {
-        if (chartRef.current) {
-            setIsAnimating(true)
-            const timer = setTimeout(() => {
-                setIsAnimating(false)
-            }, 1000)
-            return () => clearTimeout(timer)
-        }
-    }, [spheres])
 
     const handleChartClick = (event: any) => {
         if (!interactive || !onSphereClick) return
@@ -217,77 +168,43 @@ export default function WheelChart({
     }, [spheres])
 
     return (
-        <motion.div
+        <div
             className={`relative ${sizeClasses[size]} ${className}`}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            style={{
+                position: 'relative',
+                top: 0,
+                left: 0,
+                transform: 'none',
+                overflow: 'hidden'
+            }}
         >
-            {/* График */}
-            <div className="relative w-full h-full">
-                <Radar
-                    ref={chartRef}
-                    data={chartData}
-                    options={options}
-                    onClick={handleChartClick}
-                    onMouseMove={handleMouseMove}
-                />
-
-                {/* Анимация при обновлении */}
-                <AnimatePresence>
-                    {isAnimating && (
-                        <motion.div
-                            className="absolute inset-0 bg-white bg-opacity-50 rounded-full flex items-center justify-center"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            {/* ОТЛАДОЧНАЯ ИНФОРМАЦИЯ */}
+            <div className="absolute top-0 left-0 bg-red-500 text-white p-2 text-xs z-50">
+                size: {size}<br />
+                className: {className}<br />
+                sizeClasses: {sizeClasses[size]}
             </div>
 
-            {/* Средний балл в центре */}
-            <motion.div
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                variants={scoreVariants}
-                initial="hidden"
-                animate="visible"
+            {/* ВРЕМЕННОЕ ПРОСТОЕ КОЛЕСО ВМЕСТО CHART.JS */}
+            <div className="w-full h-full flex items-center justify-center">
+                <div className="w-[400px] h-[400px] bg-gradient-to-br from-blue-500 to-purple-600 rounded-full border-8 border-white shadow-2xl flex items-center justify-center">
+                    <div className="text-center text-white">
+                        <h1 className="text-3xl font-bold mb-4">Колесо жизни</h1>
+                        <p className="text-xl">8 сфер</p>
+                        <p className="text-2xl font-bold mt-2">Средний балл: {averageScore}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Индикатор среднего балла */}
+            <div
+                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-lg border border-secondary-200"
             >
                 <div className="text-center">
-                    <motion.div
-                        className="text-3xl font-bold text-primary-600"
-                        key={averageScore}
-                        initial={{ scale: 1.2, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                    >
-                        {averageScore}
-                    </motion.div>
-                    <div className="text-sm text-secondary-600 mb-2">средний балл</div>
-                </div>
-            </motion.div>
-
-            {/* Индикатор сфер */}
-            <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
-                <div className="flex space-x-2">
-                    {spheres.map((sphere: LifeSphere, index: number) => (
-                        <motion.div
-                            key={sphere.id}
-                            className={`w-3 h-3 rounded-full cursor-pointer ${hoveredIndex === index ? 'scale-125' : ''
-                                }`}
-                            style={{ backgroundColor: sphere.color }}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => onSphereClick?.(sphere)}
-                            title={sphere.name}
-                        />
-                    ))}
+                    <div className="text-2xl font-bold text-primary-600">{averageScore}</div>
+                    <div className="text-sm text-secondary-600">средний балл</div>
                 </div>
             </div>
-        </motion.div>
+        </div>
     )
 } 

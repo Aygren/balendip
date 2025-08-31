@@ -31,8 +31,8 @@ const Navigation: React.FC<NavigationProps> = ({ className = '' }) => {
     }
 
     return (
-        <nav className={`fixed bottom-0 left-0 right-0 bg-white border-t border-secondary-200 px-4 py-2 safe-area-inset ${className}`}>
-            <div className="flex items-center justify-around">
+        <nav className={`fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-secondary-200 px-6 py-4 safe-area-inset shadow-lg z-50 ${className}`}>
+            <div className="flex items-center justify-around max-w-md mx-auto">
                 {navItems.map((item) => {
                     const Icon = item.icon
                     const isActive = pathname === item.href
@@ -41,13 +41,13 @@ const Navigation: React.FC<NavigationProps> = ({ className = '' }) => {
                         <button
                             key={item.href}
                             onClick={() => handleNavClick(item.href)}
-                            className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${isActive
-                                ? 'text-primary-600 bg-primary-50'
-                                : 'text-secondary-600 hover:text-secondary-900 hover:bg-secondary-50'
+                            className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${isActive
+                                ? 'text-primary-600 bg-primary-50 shadow-md'
+                                : 'text-secondary-600 hover:text-secondary-900 hover:bg-secondary-50 hover:shadow-sm'
                                 }`}
                         >
-                            <Icon size={20} />
-                            <span className="text-xs font-medium">{item.label}</span>
+                            <Icon size={24} />
+                            <span className="text-xs font-semibold">{item.label}</span>
                         </button>
                     )
                 })}

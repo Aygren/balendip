@@ -40,16 +40,17 @@ export default function FabButton({
             <motion.button
                 onClick={onClick}
                 className={`
-          fixed bottom-24 right-4 z-50
+          fixed bottom-32 right-6 z-50
           ${sizeClasses[size]}
           ${variantClasses[variant]}
-          rounded-full shadow-lg hover:shadow-xl
+          rounded-full shadow-xl hover:shadow-2xl
           flex items-center justify-center
-          transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-offset-2
+          transition-all duration-300
+          focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-primary-500/30
+          backdrop-blur-sm
           ${className}
         `}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}

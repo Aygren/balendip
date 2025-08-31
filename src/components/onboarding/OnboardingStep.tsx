@@ -69,90 +69,95 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
   const progress = ((currentStep - 1) / (totalSteps - 1)) * 100
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-50 to-secondary-50">
-      <motion.div
-        className="w-full max-w-md"
-        variants={stepVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-      >
-        <Card className="p-6">
-          {/* Прогресс бар */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-secondary-600">
-                Шаг {currentStep} из {totalSteps}
-              </span>
-              <span className="text-sm text-secondary-500">
-                {Math.round(progress)}%
-              </span>
+    <div className="onboarding-step-container bg-gradient-to-br from-primary-50 to-secondary-50 p-4">
+      <div className="onboarding-step-content">
+        <motion.div
+          className="w-full"
+          variants={stepVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <Card className="onboarding-step-card p-6 md:p-8">
+            {/* Прогресс бар */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-medium text-secondary-600">
+                  Шаг {currentStep} из {totalSteps}
+                </span>
+                <span className="text-sm text-secondary-500">
+                  {Math.round(progress)}%
+                </span>
+              </div>
+              <div className="w-full bg-secondary-200 rounded-full h-3 overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full"
+                  variants={progressVariants}
+                  initial="initial"
+                  animate="animate"
+                  custom={progress}
+                />
+              </div>
             </div>
-            <div className="w-full bg-secondary-200 rounded-full h-2 overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full"
-                variants={progressVariants}
-                initial="initial"
-                animate="animate"
-                custom={progress}
-              />
-            </div>
-          </div>
 
-          {/* Заголовок */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-center mb-6"
-          >
-            <h2 className="text-2xl font-bold text-secondary-900 mb-2">
-              {title}
-            </h2>
-            <p className="text-secondary-600">
-              {description}
-            </p>
-          </motion.div>
-
-          {/* Контент */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="mb-6"
-          >
-            {children}
-          </motion.div>
-
-          {/* Навигация */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="flex justify-between items-center"
-          >
-            <Button
-              variant="secondary"
-              onClick={onPrevious}
-              disabled={currentStep === 1}
-              className="flex items-center space-x-2"
+            {/* Заголовок */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="onboarding-step-title mb-8"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Назад</span>
-            </Button>
+              <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 mb-3">
+                {title}
+              </h2>
+              <p className="onboarding-step-description text-base md:text-lg text-secondary-600">
+                {description}
+              </p>
+            </motion.div>
 
-            <Button
-              variant="primary"
-              onClick={onNext}
-              disabled={!canProceed}
-              className="flex items-center space-x-2"
+            {/* Контент */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="mb-8"
             >
-              <span>{isLastStep ? 'Завершить' : 'Далее'}</span>
-              {!isLastStep && <ChevronRight className="w-4 h-4" />}
-            </Button>
-          </motion.div>
-        </Card>
-      </motion.div>
+              {children}
+            </motion.div>
+
+            {/* Навигация */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="onboarding-step-buttons flex flex-col sm:flex-row gap-4 justify-center items-center"
+            >
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={onPrevious}
+                disabled={currentStep === 1}
+                icon={<ChevronLeft className="w-5 h-5" />}
+                className="w-full sm:w-auto"
+              >
+                Назад
+              </Button>
+
+              <Button
+                variant="modern"
+                size="lg"
+                onClick={onNext}
+                disabled={!canProceed}
+                icon={<ChevronRight className="w-5 h-5" />}
+                iconPosition="right"
+                className="w-full sm:w-auto"
+              >
+                {isLastStep ? 'Завершить' : 'Далее'}
+              </Button>
+            </motion.div>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   )
 }

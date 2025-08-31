@@ -1,183 +1,158 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useOnboarding } from '@/hooks/useOnboarding'
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import { User, Target, Heart, TrendingUp, ArrowRight } from 'lucide-react'
+import { useOnboarding } from '@/contexts/OnboardingContext'
 
-interface WelcomeOnboardingProps {
-    onComplete: () => void
+export const WelcomeOnboarding: React.FC = () => {
+  const { data, setUserName, setUserGoal, goToNextStep, canProceed } = useOnboarding()
+  const [localName, setLocalName] = useState(data.userName || 'Сергей')
+  const [localGoal, setLocalGoal] = useState(data.userGoal || 'Хочу на море!!!')
+
+  // Добавляем логирование для отладки
+  React.useEffect(() => {
+    console.log('WelcomeOnboarding: Component mounted/updated')
+    console.log('WelcomeOnboarding: data from context:', data)
+    console.log('WelcomeOnboarding: localName:', `"${localName}"`)
+    console.log('WelcomeOnboarding: localGoal:', `"${localGoal}"`)
+    console.log('WelcomeOnboarding: localName.trim():', `"${localName.trim()}"`)
+    console.log('WelcomeOnboarding: localGoal.trim():', `"${localGoal.trim()}"`)
+    console.log('WelcomeOnboarding: Button disabled:', !localName.trim() || !localGoal.trim())
+    console.log('WelcomeOnboarding: Button enabled:', !(!localName.trim() || !localGoal.trim()))
+  }, [data, localName, localGoal])
+
+
+
+  const handleContinue = () => {
+    console.log('=== WelcomeOnboarding: handleContinue called ===')
+    console.log('localName:', localName, 'localGoal:', localGoal)
+    console.log('Button disabled state:', !(localName.trim() && localGoal.trim()))
+
+    if (localName.trim() && localGoal.trim()) {
+      console.log('✅ Setting user data and moving to next step')
+      
+      const trimmedName = localName.trim()
+      const trimmedGoal = localGoal.trim()
+      
+      console.log('Calling setUserName with:', trimmedName)
+      setUserName(trimmedName)
+      console.log('Calling setUserGoal with:', trimmedGoal)
+      setUserGoal(trimmedGoal)
+
+      // Вызываем goToNextStep сразу
+      console.log('Calling goToNextStep() immediately')
+      goToNextStep()
+      console.log('✅ goToNextStep() called successfully')
+    } else {
+      console.log('❌ Missing user data, cannot continue')
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && localName.trim() && localGoal.trim()) {
+      handleContinue()
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <Card className="p-8 text-center">
+          {/* Логотип */}
+          <motion.div
+            className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-6"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
+          >
+            <span className="text-white text-2xl font-bold">B</span>
+          </motion.div>
+
+          {/* Заголовок */}
+          <motion.h1
+            className="text-2xl font-bold text-secondary-900 mb-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            Добро пожаловать в Balendip!
+          </motion.h1>
+
+          <motion.p
+            className="text-secondary-600 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
+            Давайте настроим ваш персональный трекер баланса жизни
+          </motion.p>
+
+          {/* Форма */}
+          <motion.div
+            className="space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <Input
+              label="Ваше имя"
+              value={localName}
+              onChange={(e) => setLocalName(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Введите ваше имя"
+              className="text-center"
+            />
+
+            <Input
+              label="Ваша цель"
+              value={localGoal}
+              onChange={(e) => setLocalGoal(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Что хотите улучшить в жизни?"
+              className="text-center"
+            />
+          </motion.div>
+
+          {/* Кнопка продолжения */}
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.5 }}
+          >
+            <Button
+              onClick={() => {
+                console.log('🔥 Button clicked!')
+                console.log('🔥 Button state check:')
+                console.log('  - localName:', `"${localName}"`)
+                console.log('  - localGoal:', `"${localGoal}"`)
+                console.log('  - localName.trim():', `"${localName.trim()}"`)
+                console.log('  - localGoal.trim():', `"${localGoal.trim()}"`)
+                console.log('  - Button disabled:', !localName.trim() || !localGoal.trim())
+                handleContinue()
+              }}
+              disabled={!localName.trim() || !localGoal.trim()}
+              className="w-full"
+              size="lg"
+            >
+              Продолжить
+            </Button>
+          </motion.div>
+
+          {/* Прогресс */}
+          <div className="mt-6 text-sm text-secondary-500">
+            Шаг 1 из 4
+          </div>
+        </Card>
+      </motion.div>
+    </div>
+  )
 }
-
-const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => {
-    const { saveUserData, stepData } = useOnboarding()
-    const [currentStep, setCurrentStep] = useState(0)
-    const [userName, setUserName] = useState('')
-    const [userGoal, setUserGoal] = useState('')
-
-    // Загружаем сохраненные данные
-    useEffect(() => {
-        if (stepData.userName) {
-            setUserName(stepData.userName)
-        }
-        if (stepData.userGoal) {
-            setUserGoal(stepData.userGoal)
-        }
-    }, [stepData])
-
-    const steps = [
-        {
-            title: 'Добро пожаловать в Balendip! 🎉',
-            description: 'Давайте создадим ваш персональный профиль для отслеживания жизненных сфер',
-            icon: <User className="w-16 h-16 text-primary-500" />,
-            content: (
-                <div className="space-y-4">
-                    <Input
-                        label="Как вас зовут?"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        placeholder="Введите ваше имя"
-                        required
-                    />
-                </div>
-            )
-        },
-        {
-            title: 'Ваша цель 🎯',
-            description: 'Расскажите, что вы хотите улучшить в своей жизни',
-            icon: <Target className="w-16 h-16 text-primary-500" />,
-            content: (
-                <div className="space-y-4">
-                    <Input
-                        label="Ваша главная цель"
-                        value={userGoal}
-                        onChange={(e) => setUserGoal(e.target.value)}
-                        placeholder="Например: улучшить баланс работы и отдыха"
-                        required
-                    />
-                </div>
-            )
-        },
-        {
-            title: 'Готово! 🚀',
-            description: 'Теперь давайте настроим ваши жизненные сферы и начнем отслеживать прогресс',
-            icon: <TrendingUp className="w-16 h-16 text-primary-500" />,
-            content: (
-                <div className="space-y-4 text-center">
-                    <p className="text-secondary-600">
-                        Мы создадим для вас базовые сферы жизни, которые вы сможете настроить под себя
-                    </p>
-                </div>
-            )
-        }
-    ]
-
-    const handleNext = () => {
-        if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1)
-        } else {
-            // Сохраняем данные пользователя и переходим к следующему шагу
-            saveUserData(userName, userGoal)
-            onComplete()
-        }
-    }
-
-    const handleSkip = () => {
-        onComplete()
-    }
-
-    const canProceed = () => {
-        if (currentStep === 0) return userName.trim().length > 0
-        if (currentStep === 1) return userGoal.trim().length > 0
-        return true
-    }
-
-    const buttonStyle: React.CSSProperties = {
-        fontSize: '20px', // Такой же размер, как у описания (text-xl)
-        fontWeight: 'bold',
-        padding: '16px 22px', // Уменьшено на 30% с 24px 32px
-        minHeight: '56px', // Уменьшено на 30% с 80px
-        borderRadius: '12px', // Уменьшено на 30% с 16px
-        border: '2px solid', // Уменьшено на 30% с 3px
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-    }
-
-    const primaryButtonStyle: React.CSSProperties = {
-        ...buttonStyle,
-        backgroundColor: '#0ea5e9',
-        color: 'white',
-        borderColor: '#0ea5e9',
-    }
-
-    const secondaryButtonStyle: React.CSSProperties = {
-        ...buttonStyle,
-        backgroundColor: '#f1f5f9',
-        color: '#0f172a',
-        borderColor: '#cbd5e1',
-    }
-
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-2xl">
-                <div className="text-center space-y-8">
-                    {/* Иконка и заголовок */}
-                    <div className="flex justify-center">
-                        {steps[currentStep].icon}
-                    </div>
-
-                    <div className="space-y-4">
-                        <h1 className="text-4xl font-bold text-secondary-900">
-                            {steps[currentStep].title}
-                        </h1>
-                        <p className="text-xl text-secondary-600">
-                            {steps[currentStep].description}
-                        </p>
-                    </div>
-
-                    {/* Контент шага */}
-                    <div className="min-h-[160px] flex items-center">
-                        {steps[currentStep].content}
-                    </div>
-
-                    {/* Прогресс */}
-                    <div className="flex justify-center space-x-3">
-                        {steps.map((_, index) => (
-                            <div
-                                key={index}
-                                className={`w-3 h-3 rounded-full ${index <= currentStep ? 'bg-primary-500' : 'bg-secondary-200'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Кнопки */}
-                    <div className="flex space-x-4">
-                        {currentStep < steps.length - 1 && (
-                            <button
-                                style={secondaryButtonStyle}
-                                onClick={handleSkip}
-                                className="flex-1 hover:bg-secondary-200 active:scale-95"
-                            >
-                                Пропустить
-                            </button>
-                        )}
-                        <button
-                            style={primaryButtonStyle}
-                            onClick={handleNext}
-                            disabled={!canProceed()}
-                            className={`flex-1 hover:bg-primary-700 active:scale-95 ${!canProceed() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            {currentStep === steps.length - 1 ? 'Начать' : 'Далее'}
-                            <ArrowRight className="w-6 h-6 ml-2 inline" />
-                        </button>
-                    </div>
-                </div>
-            </Card>
-        </div>
-    )
-}
-
-export default WelcomeOnboarding

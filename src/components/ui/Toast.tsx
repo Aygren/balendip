@@ -33,13 +33,13 @@ const Toast: React.FC<ToastProps> = ({
     const getIcon = () => {
         switch (type) {
             case 'success':
-                return <CheckCircle size={20} className="text-green-600" />
+                return <CheckCircle size={22} className="text-green-600" />
             case 'error':
-                return <AlertCircle size={20} className="text-red-600" />
+                return <AlertCircle size={22} className="text-red-600" />
             case 'info':
-                return <Info size={20} className="text-blue-600" />
+                return <Info size={22} className="text-blue-600" />
             default:
-                return <Info size={20} className="text-blue-600" />
+                return <Info size={22} className="text-blue-600" />
         }
     }
 

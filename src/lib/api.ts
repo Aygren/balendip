@@ -178,129 +178,201 @@ export const eventsApi = {
 export const spheresApi = {
     // Получение всех сфер жизни
     async getAll(): Promise<LifeSphere[]> {
-        const { data: { user } } = await supabase.auth.getUser()
+        console.log('🔍 spheresApi.getAll() - начало выполнения')
+        
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            console.log('👤 Получен пользователь:', user ? { id: user.id, email: user.email } : 'null')
 
-        if (!user) {
-            throw new Error('Пользователь не авторизован')
+            if (!user) {
+                console.error('❌ Пользователь не авторизован')
+                throw new Error('Пользователь не авторизован')
+            }
+
+            console.log('📡 Отправляем запрос к таблице life_spheres для пользователя:', user.id)
+            
+            const { data, error } = await supabase
+                .from('life_spheres')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: true })
+
+            console.log('📊 Ответ от Supabase:', { data: data?.length || 0, error })
+
+            if (error) {
+                console.error('❌ Ошибка Supabase:', error)
+                throw new Error(`Ошибка загрузки сфер жизни: ${error.message}`)
+            }
+
+            console.log('✅ Сферы жизни успешно загружены:', data?.length || 0)
+            return data || []
+        } catch (error) {
+            console.error('💥 Общая ошибка в spheresApi.getAll():', error)
+            throw error
         }
-
-        const { data, error } = await supabase
-            .from('life_spheres')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: true })
-
-        if (error) {
-            throw new Error(`Ошибка загрузки сфер жизни: ${error.message}`)
-        }
-
-        return data || []
     },
 
     // Получение сферы по ID
     async getById(id: string): Promise<LifeSphere> {
-        const { data, error } = await supabase
-            .from('life_spheres')
-            .select('*')
-            .eq('id', id)
-            .single()
+        console.log('🔍 spheresApi.getById() - получение сферы по ID:', id)
+        
+        try {
+            const { data, error } = await supabase
+                .from('life_spheres')
+                .select('*')
+                .eq('id', id)
+                .single()
 
-        if (error) {
-            throw new Error(`Ошибка загрузки сферы жизни: ${error.message}`)
+            if (error) {
+                console.error('❌ Ошибка получения сферы по ID:', error)
+                throw new Error(`Ошибка загрузки сферы жизни: ${error.message}`)
+            }
+
+            console.log('✅ Сфера жизни получена:', data)
+            return data
+        } catch (error) {
+            console.error('💥 Общая ошибка в spheresApi.getById():', error)
+            throw error
         }
-
-        return data
     },
 
     // Создание сферы жизни
     async create(sphereData: Omit<LifeSphere, 'id' | 'created_at' | 'updated_at'>): Promise<LifeSphere> {
-        const { data: { user } } = await supabase.auth.getUser()
+        console.log('🔍 spheresApi.create() - создание сферы:', sphereData)
+        
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
 
-        if (!user) {
-            throw new Error('Пользователь не авторизован')
+            if (!user) {
+                console.error('❌ Пользователь не авторизован')
+                throw new Error('Пользователь не авторизован')
+            }
+
+            const { data, error } = await supabase
+                .from('life_spheres')
+                .insert([{
+                    ...sphereData,
+                    user_id: user.id,
+                }])
+                .select()
+                .single()
+
+            if (error) {
+                console.error('❌ Ошибка создания сферы:', error)
+                throw new Error(`Ошибка создания сферы жизни: ${error.message}`)
+            }
+
+            console.log('✅ Сфера жизни создана:', data)
+            return data
+        } catch (error) {
+            console.error('💥 Общая ошибка в spheresApi.create():', error)
+            throw error
         }
-
-        const { data, error } = await supabase
-            .from('life_spheres')
-            .insert([{
-                ...sphereData,
-                user_id: user.id,
-            }])
-            .select()
-            .single()
-
-        if (error) {
-            throw new Error(`Ошибка создания сферы жизни: ${error.message}`)
-        }
-
-        return data
     },
 
     // Обновление сферы жизни
     async update(id: string, updates: Partial<LifeSphere>): Promise<LifeSphere> {
-        const { data, error } = await supabase
-            .from('life_spheres')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single()
+        console.log('🔍 spheresApi.update() - обновление сферы:', { id, updates })
+        
+        try {
+            const { data, error } = await supabase
+                .from('life_spheres')
+                .update(updates)
+                .eq('id', id)
+                .select()
+                .single()
 
-        if (error) {
-            throw new Error(`Ошибка обновления сферы жизни: ${error.message}`)
+            if (error) {
+                console.error('❌ Ошибка обновления сферы:', error)
+                throw new Error(`Ошибка обновления сферы жизни: ${error.message}`)
+            }
+
+            console.log('✅ Сфера жизни обновлена:', data)
+            return data
+        } catch (error) {
+            console.error('💥 Общая ошибка в spheresApi.update():', error)
+            throw error
         }
-
-        return data
     },
 
     // Удаление сферы жизни
     async delete(id: string): Promise<void> {
-        const { error } = await supabase
-            .from('life_spheres')
-            .delete()
-            .eq('id', id)
+        console.log('🔍 spheresApi.delete() - удаление сферы:', id)
+        
+        try {
+            const { error } = await supabase
+                .from('life_spheres')
+                .delete()
+                .eq('id', id)
 
-        if (error) {
-            throw new Error(`Ошибка удаления сферы жизни: ${error.message}`)
+            if (error) {
+                console.error('❌ Ошибка удаления сферы:', error)
+                throw new Error(`Ошибка удаления сферы жизни: ${error.message}`)
+            }
+
+            console.log('✅ Сфера жизни удалена:', id)
+        } catch (error) {
+            console.error('💥 Общая ошибка в spheresApi.delete():', error)
+            throw error
         }
     },
 
     // Инициализация начальных сфер
     async initializeDefaultSpheres(): Promise<LifeSphere[]> {
-        const { data: { user } } = await supabase.auth.getUser()
+        console.log('🔍 spheresApi.initializeDefaultSpheres() - начало инициализации')
+        
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
 
-        if (!user) {
-            throw new Error('Пользователь не авторизован')
+            if (!user) {
+                console.error('❌ Пользователь не авторизован')
+                throw new Error('Пользователь не авторизован')
+            }
+
+            console.log('🔍 Проверяем существующие сферы для пользователя:', user.id)
+
+            // Проверяем, есть ли уже сферы у пользователя
+            const { data: existingSpheres } = await supabase
+                .from('life_spheres')
+                .select('id')
+                .eq('user_id', user.id)
+                .limit(1)
+
+            console.log('📊 Существующие сферы:', existingSpheres?.length || 0)
+
+            if (existingSpheres && existingSpheres.length > 0) {
+                console.log('✅ У пользователя уже есть сферы, возвращаем их')
+                return this.getAll()
+            }
+
+            console.log('🆕 Создаем начальные сферы для пользователя:', user.id)
+
+            // Создаем начальные сферы
+            const { DEFAULT_SPHERES } = await import('@/utils/initSpheres')
+            const spheresToInsert = DEFAULT_SPHERES.map(sphere => ({
+                ...sphere,
+                user_id: user.id,
+                is_default: true,
+            }))
+
+            console.log('📝 Сферы для вставки:', spheresToInsert)
+
+            const { data, error } = await supabase
+                .from('life_spheres')
+                .insert(spheresToInsert)
+                .select()
+
+            if (error) {
+                console.error('❌ Ошибка создания начальных сфер:', error)
+                throw new Error(`Ошибка создания начальных сфер: ${error.message}`)
+            }
+
+            console.log('✅ Начальные сферы созданы:', data?.length || 0)
+            return data || []
+        } catch (error) {
+            console.error('💥 Общая ошибка в spheresApi.initializeDefaultSpheres():', error)
+            throw error
         }
-
-        // Проверяем, есть ли уже сферы у пользователя
-        const { data: existingSpheres } = await supabase
-            .from('life_spheres')
-            .select('id')
-            .eq('user_id', user.id)
-            .limit(1)
-
-        if (existingSpheres && existingSpheres.length > 0) {
-            return this.getAll()
-        }
-
-        // Создаем начальные сферы
-        const { DEFAULT_SPHERES } = await import('@/types')
-        const spheresToInsert = DEFAULT_SPHERES.map(sphere => ({
-            ...sphere,
-            user_id: user.id,
-            is_default: true,
-        }))
-
-        const { data, error } = await supabase
-            .from('life_spheres')
-            .insert(spheresToInsert)
-            .select()
-
-        if (error) {
-            throw new Error(`Ошибка создания начальных сфер: ${error.message}`)
-        }
-
-        return data || []
     },
 }
 

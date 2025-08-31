@@ -57,7 +57,7 @@ const Modal: React.FC<ModalProps> = ({
                                 {title && (
                                     <Dialog.Title
                                         as="h3"
-                                        className="mb-4 flex items-center justify-between text-lg font-semibold leading-6 text-secondary-900"
+                                        className="mb-6 flex items-center justify-between text-xl font-bold leading-6 text-secondary-900"
                                     >
                                         {title}
                                         <button
@@ -72,9 +72,9 @@ const Modal: React.FC<ModalProps> = ({
                                 {!title && (
                                     <button
                                         onClick={on_close}
-                                        className="absolute right-4 top-4 rounded-lg p-1 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-600 transition-colors"
+                                        className="absolute right-6 top-6 rounded-xl p-2 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-600 transition-all duration-200 hover:scale-110"
                                     >
-                                        <X size={20} />
+                                        <X size={22} />
                                     </button>
                                 )}
 

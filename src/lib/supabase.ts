@@ -1,7 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mwnzdkqmconsaobioxxo.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13bnpka3FtY29uc2FvYmlveHhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg0MTEsImV4cCI6MjA2OTU2NDQxMX0.2wUiLbqaIXGIuoig1fWrhMQeQ3Zgt6qLvJA9W1Bpvjo'
+
+// Отладочная информация
+console.log('Supabase URL:', supabaseUrl)
+console.log('Supabase Key:', supabaseAnonKey ? '***' : 'NOT SET')
+console.log('Environment check:', {
+    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    nodeEnv: process.env.NODE_ENV
+})
+
+// Проверяем, что переменные окружения загрузились
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    console.warn('⚠️ NEXT_PUBLIC_SUPABASE_URL не установлен, используется значение по умолчанию')
+}
+
+if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn('⚠️ NEXT_PUBLIC_SUPABASE_ANON_KEY не установлен, используется значение по умолчанию')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
