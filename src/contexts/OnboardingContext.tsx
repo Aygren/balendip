@@ -224,7 +224,12 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Завершение онбординга
   const completeOnboarding = useCallback(() => {
-    console.log('OnboardingContext: completeOnboarding called')
+    console.log('=== OnboardingContext: completeOnboarding called ===')
+    console.log('Current state before completion:', state)
+    console.log('Router available:', !!router)
+    console.log('Router.push available:', typeof router?.push === 'function')
+    console.log('Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A')
+
     setStorageItem(STORAGE_KEYS.ONBOARDING_COMPLETE, true)
     removeStorageItem(STORAGE_KEYS.ONBOARDING_DATA)
     removeStorageItem(STORAGE_KEYS.ONBOARDING_STEP)
@@ -233,19 +238,30 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
 
     // Переходим к главной странице
     try {
-      if (router) {
+      if (router && typeof router.push === 'function') {
         console.log('✅ Router available, redirecting to /')
-        router.push('/')
+        // Добавляем небольшую задержку для корректного обновления состояния
+        setTimeout(() => {
+          console.log('🔄 Executing router.push("/")')
+          try {
+            router.push('/')
+          } catch (routerError) {
+            console.error('❌ Router.push failed:', routerError)
+            console.log('🔄 Falling back to window.location')
+            window.location.href = '/'
+          }
+        }, 100)
       } else {
-        console.log('❌ Router not available, using window.location')
+        console.log('❌ Router not available or invalid, using window.location')
         window.location.href = '/'
       }
     } catch (error) {
-      console.error('Error during navigation:', error)
+      console.error('❌ Error during navigation:', error)
       // Fallback to window.location
+      console.log('🔄 Using fallback navigation with window.location')
       window.location.href = '/'
     }
-  }, [router, updateState])
+  }, [router, updateState, state])
 
   // Сброс онбординга
   const resetOnboarding = useCallback(() => {

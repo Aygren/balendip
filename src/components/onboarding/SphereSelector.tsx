@@ -39,6 +39,8 @@ export const SphereSelector: React.FC = () => {
   const handleContinue = () => {
     console.log('=== SphereSelector: handleContinue called ===')
     console.log('currentStep:', currentStep)
+    console.log('ONBOARDING_STEPS.SPHERE_SETUP:', ONBOARDING_STEPS.SPHERE_SETUP)
+    console.log('ONBOARDING_STEPS.SPHERE_SELECTION:', ONBOARDING_STEPS.SPHERE_SELECTION)
     console.log('selectedIds:', selectedIds)
     console.log('localSpheres:', localSpheres)
 
@@ -55,15 +57,23 @@ export const SphereSelector: React.FC = () => {
     console.log('✅ Setting configured spheres:', localSpheres)
     setSpheres(localSpheres)
 
-    if (currentStep === ONBOARDING_STEPS.SPHERE_SETUP) {
-      // На шаге настройки сфер - завершаем онбординг и переходим в главное окно
-      console.log('🎯 SPHERE_SETUP step - completing onboarding and going to main page')
-      completeOnboarding()
-    } else {
-      // На шаге выбора сфер - переходим к следующему шагу
-      console.log('🎯 SPHERE_SELECTION step - going to next step')
-      goToNextStep()
+    // На странице /onboarding/spheres всегда завершаем онбординг
+    // Это последний шаг онбординга
+    console.log('🎯 On spheres page - completing onboarding and going to main page')
+
+    // Сохраняем данные в localStorage
+    try {
+      localStorage.setItem('onboardingComplete', 'true')
+      localStorage.removeItem('onboardingData')
+      localStorage.removeItem('onboardingStep')
+      console.log('✅ Data saved to localStorage')
+    } catch (error) {
+      console.error('❌ Error saving to localStorage:', error)
     }
+
+    // Прямой переход на главную страницу
+    console.log('🔄 Redirecting to main page via window.location.href')
+    window.location.href = '/'
   }
 
   const handleBack = () => {
